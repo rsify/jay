@@ -95,14 +95,14 @@ export const addBuiltinsToObject = (o: LooseObject): void =>
 		})
 	)
 
-// Reading package.json like this prevents typescript from nesting the "src"
-// folder within dist - doing `import '../package.json'` from `src` creates
-// `dist/package.json` and `dist/src/*`. This normally wouldn't be a big
+// Reading package.json like this prevents typescript from nesting the "source"
+// folder within dist - doing `import '../package.json'` from `source` creates
+// `dist/package.json` and `dist/source/*`. This normally wouldn't be a big
 // problem, apart from the fact that npm reads nested package.json files when
 // publishing, completely messing up the "files" property that gets read not
-// only from `/` but also `/src`. Since we have `dist` in the `files`
-// package.json property, npm looks for `src/dist`, and only for that folder
-// (which obviously doesn't exist within `src`).
+// only from `/` but also `/source`. Since we have `dist` in the `files`
+// package.json property, npm looks for `source/dist`, and only for that folder
+// (which obviously doesn't exist within `source`).
 export const packageJson = t.intersection([
 	t.type({
 		name: t.string,

@@ -11,7 +11,7 @@ import {
 	findRequiredErrors,
 	isLocalModuleId,
 	stripVersion
-} from '../src/moduler'
+} from '../source/moduler'
 
 test('findRequired - parse error', t => {
 	const code = "require('hello') F"

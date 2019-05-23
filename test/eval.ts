@@ -8,7 +8,7 @@ import {
 	OutputResults,
 	SideEffectError,
 	createEvaluator
-} from '../src/eval'
+} from '../source/eval'
 
 const out = (output: any): OutputResults => ({output})
 const err = (error: Error): EvaluationResults => ({error})

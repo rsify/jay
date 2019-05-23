@@ -10,7 +10,7 @@ import {
 	lastItem,
 	nextItem,
 	previousItem
-} from '../src/scroll'
+} from '../source/scroll'
 
 type Omit<T, Key> = Pick<T, Exclude<keyof T, Key>>
 

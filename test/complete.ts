@@ -5,7 +5,7 @@ import test, {ExecutionContext} from 'ava'
 import complete, {
 	Completions,
 	getAllPropertyNames
-} from '../src/complete'
+} from '../source/complete'
 
 const objectPrototypePropertyNames =
 	Object.getOwnPropertyNames(Object.getPrototypeOf({}))

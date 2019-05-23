@@ -6,7 +6,7 @@ import {
 	getColumnSizes,
 	returnError,
 	packageJson
-} from '../src/util'
+} from '../source/util'
 
 test('getColumnSizes', t => {
 	const cases: [string[][], number[]][] = [
