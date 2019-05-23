@@ -1,0 +1,10 @@
+language: node_js
+node_js:
+  - 'latest'
+  - '12'
+  - '10'
+  - '8'
+os:
+  - windows
+  - linux
+  - osx
