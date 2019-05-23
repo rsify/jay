@@ -306,7 +306,7 @@ export function createModuler(basePath: string): Moduler {
 			'--json'
 		]
 
-		const {exitCode, stdout} = await execa('npm', args, {
+		const {code, stdout} = await execa('npm', args, {
 			reject: false,
 			stderr: 'pipe'
 		})
@@ -336,7 +336,7 @@ export function createModuler(basePath: string): Moduler {
 
 		const parsed = JSON.parse(stdout)
 
-		if (exitCode !== 0) {
+		if (code !== 0) {
 			const {error} = OutputError.decode(parsed)
 				.getOrElseL(errors => {
 					throw new Error(failure(errors).join('\n'))

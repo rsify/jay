@@ -1,5 +1,5 @@
 {
-	"name": "jay",
+	"name": "jay-prerelease",
 	"version": "0.0.0",
 	"description": "Supercharged node.js repl",
 	"license": "MIT",
@@ -29,7 +29,7 @@
 		"builtin-modules": "^3.1.0",
 		"chalk": "^2.4.2",
 		"env-paths": "^2.2.0",
-		"execa": "git+https://github.com/sindresorhus/execa.git",
+		"execa": "^1.0.0",
 		"figures": "^3.0.0",
 		"got": "^9.6.0",
 		"import-fresh": "^3.0.0",
@@ -47,6 +47,7 @@
 	},
 	"devDependencies": {
 		"@nikersify/noop": "^1.0.0",
+		"@types/execa": "^0.9.0",
 		"@types/lodash": "^4.14.123",
 		"@types/node": "^11.13.5",
 		"@types/resolve": "0.0.8",
