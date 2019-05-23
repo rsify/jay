@@ -1,8 +1,10 @@
 import {createWriteStream} from 'fs'
 import {emitKeypressEvents} from 'readline'
 
-import {zip} from 'lodash'
 import builtinModules from 'builtin-modules'
+import readPkgUp from 'read-pkg-up'
+import * as t from 'io-ts'
+import {zip} from 'lodash'
 
 import {KeypressDetails} from './prompt'
 
@@ -84,6 +86,7 @@ export const addBuiltinsToObject = (o: LooseObject): void =>
 				Object.defineProperty(o, m, {
 					configurable: true,
 					enumerable: false,
+					writable: true,
 					value: required
 				})
 
@@ -91,3 +94,27 @@ export const addBuiltinsToObject = (o: LooseObject): void =>
 			}
 		})
 	)
+
+// Reading package.json like this prevents typescript from nesting the "src"
+// folder within dist - doing `import '../package.json'` from `src` creates
+// `dist/package.json` and `dist/src/*`. This normally wouldn't be a big
+// problem, apart from the fact that npm reads nested package.json files when
+// publishing, completely messing up the "files" property that gets read not
+// only from `/` but also `/src`. Since we have `dist` in the `files`
+// package.json property, npm looks for `src/dist`, and only for that folder
+// (which obviously doesn't exist within `src`).
+export const packageJson = t.intersection([
+	t.type({
+		name: t.string,
+		version: t.string,
+		description: t.string,
+		author: t.type({
+			name: t.string,
+			email: t.string,
+			url: t.string
+		})
+	}),
+	t.record(t.string, t.unknown)
+]).decode((readPkgUp.sync() || {package: {}}).package).getOrElseL(() => {
+	throw new Error('Couldn\'t parse `package.json` - invalid format')
+})

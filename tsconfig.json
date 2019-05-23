@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "outDir": "dist",
     "target": "es2016", // Node.js 6
     "module": "commonjs",
     "lib": ["esnext"],
@@ -10,12 +11,11 @@
     "jsx": "react",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "outDir": "lib",
     "strict": true,
     "noEmitOnError": true,
     "typeRoots": ["node_modules/@types", "typings"]
   },
   "include": [
-    "./src/**/*"
+    "src"
   ]
 }

@@ -10,8 +10,6 @@ import wrapAwait from 'wrap-await'
 import {default as c} from 'chalk'
 import {uniq} from 'lodash'
 
-import * as pkg from '../package.json'
-
 import complete from './complete'
 import promptLine from './prompt'
 import {Commands, LineResult} from './commands'
@@ -30,7 +28,11 @@ import {
 	findRequired
 } from './moduler'
 
-import {addBuiltinsToObject, returnError} from './util'
+import {
+	addBuiltinsToObject,
+	packageJson,
+	returnError
+} from './util'
 import {Ask, createAsk} from './ask'
 
 async function processRequired({
@@ -124,7 +126,7 @@ function main(): void {
 	const history: string[] = []
 
 	const moduler = createModuler(
-		path.join(envPaths(pkg.name).cache, 'packages')
+		path.join(envPaths(packageJson.name).cache, 'packages')
 	)
 
 	const ask = createAsk(

@@ -4,7 +4,8 @@ import {
 	LooseObject,
 	addBuiltinsToObject,
 	getColumnSizes,
-	returnError
+	returnError,
+	packageJson
 } from '../src/util'
 
 test('getColumnSizes', t => {
@@ -45,4 +46,8 @@ test('addBuiltinsToObject', t => {
 	// Make sure the added properties are overridable
 	o.path = 0
 	t.is(o.path, 0)
+})
+
+test('packageJson', t => {
+	t.is(typeof packageJson.name, 'string')
 })
