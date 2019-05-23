@@ -1,5 +1,6 @@
 {
   "name": "jay",
+  "version": "0.0.0",
   "bin": {
     "jay": "lib/src/cli.js"
   },
