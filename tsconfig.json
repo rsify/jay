@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es2016", // Node.js 6
+    "module": "commonjs",
+    "lib": ["esnext"],
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "jsx": "react",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "outDir": "lib",
+    "strict": true,
+    "noEmitOnError": true,
+    "typeRoots": ["node_modules/@types", "typings"]
+  },
+  "include": [
+    "./src/**/*"
+  ]
+}
