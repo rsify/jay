@@ -332,11 +332,8 @@ if (process.argv.includes('--with-npm')) {
 			published: '2019-05-07T12:56:41.282Z',
 			description: 'do nothing',
 			license: 'MIT',
-			dependencies: {},
-			downloadsLast30Days: output.downloadsLast30Days
+			dependencies: {}
 		})
-
-		t.is(typeof output.downloadsLast30Days, 'number')
 	})
 
 	test('moduler - info - missing package', async t => {
