@@ -115,6 +115,8 @@ export const packageJson = t.intersection([
 		})
 	}),
 	t.record(t.string, t.unknown)
-]).decode((readPkgUp.sync() || {package: {}}).package).getOrElseL(() => {
+]).decode((readPkgUp.sync({
+	cwd: __dirname
+}) || {package: {}}).package).getOrElseL(() => {
 	throw new Error('Couldn\'t parse `package.json` - invalid format')
 })
