@@ -29,7 +29,7 @@ type RunCases =
 const runCases: RunCases = (t, ev = createEvaluator().evaluate) => cases =>
 	pSeries(cases.map(([input, expected]) => async () =>
 		t.deepEqual(await ev(input), expected, input)
-	)).then(() => {})
+	)).then(() => {}) // eslint-disable-line promise/prefer-await-to-then
 
 test('eval - basic', t => runCases(t)([
 	['5', out(5)],
