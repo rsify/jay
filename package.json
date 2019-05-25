@@ -12,6 +12,9 @@
 	"bin": {
 		"jay": "dist/cli.js"
 	},
+	"engines": {
+		"node": ">=10"
+	},
 	"scripts": {
 		"build": "del dist && tsc",
 		"build:watch": "tsc -w",
