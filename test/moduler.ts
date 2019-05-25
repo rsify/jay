@@ -280,7 +280,7 @@ if (process.argv.includes('--with-npm')) {
 			version: '1.0.0',
 			path: path.join(
 				base,
-				'lib',
+				process.platform === 'win32' ? '' : 'lib',
 				'node_modules',
 				'@nikersify',
 				'noop'
@@ -299,7 +299,7 @@ if (process.argv.includes('--with-npm')) {
 			location: 'global cache',
 			filepath: path.join(
 				base,
-				'lib',
+				process.platform === 'win32' ? '' : 'lib',
 				'node_modules',
 				'@nikersify',
 				'noop',
