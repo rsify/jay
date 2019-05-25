@@ -8,7 +8,7 @@ import {
 import {PassThrough} from 'stream'
 
 import ansiEscapes from 'ansi-escapes'
-import chalk from 'chalk'
+import {default as c} from 'chalk'
 import stripAnsi from 'strip-ansi'
 import {clamp, flatten, times, uniqBy} from 'lodash'
 
@@ -54,7 +54,7 @@ export default function promptLine(
 	complete: CompletionFunction
 ): Promise<PromptResult> {
 	return new Promise(resolve => {
-		const pre = chalk.bold.gray('> ')
+		const pre = c.bold.gray('> ')
 
 		const {stdin, stdout} = process
 
@@ -122,7 +122,7 @@ export default function promptLine(
 					((scroller && scroller.selected === -1) || !scroller) &&
 					!stopping
 				) {
-					return sliced + chalk.gray(
+					return sliced + c.gray(
 						menuItems[0][0].slice((completee || '').length)
 					)
 				}
@@ -236,7 +236,7 @@ export default function promptLine(
 
 				const lineStyleFn =
 					selected ?
-						chalk.bgBlackBright :
+						c.bgBlackBright :
 						noop
 
 				const renderedRowNumber = i - scroller.start
@@ -247,12 +247,12 @@ export default function promptLine(
 					scrollbar.size !== menuItems.length
 
 				const scrollCharFn = showScrollbarChar ?
-					chalk.bgBlackBright :
+					c.bgBlackBright :
 					noop
 
 				stdout.write(ansiEscapes.cursorMove(offset))
 				stdout.write(
-					chalk.bgWhite.black(
+					c.bgWhite.black(
 						lineStyleFn(
 							line + scrollCharFn(' ')
 						)
@@ -332,6 +332,10 @@ export default function promptLine(
 				return resolve([Commands.Exit, {}])
 			} else if (ctrl && name === 'c') {
 				stop()
+
+				if (rl.line === '') {
+					stdout.write(c.gray(`Press \`${c.bold('ctrl+d')}\` to exit.\n`))
+				}
 
 				return resolve([Commands.Abort, {}])
 			} else if (ctrl && name === 'l') {

@@ -54,7 +54,8 @@ ${c.gray('dependencies:')} ${c.cyan(Object.keys(info.dependencies).length.toStri
 		`${c.dim.bold('?')} ${c.green.bold(info.name)} was not found ` +
 		'locally, would you like to install it to jay\'s cache?'
 
-		write('\n\n' + wrapAnsi(`${q} ${yn}`, outStream.columns || Infinity))
+		write('\n\n' + wrapAnsi(`${q} ${yn}`, outStream.columns || Infinity) + ' ')
+		write(ansiEscapes.cursorHide)
 
 		const getK = async (): Promise<KeypressDetails> => {
 			const key = await getKeyPress(inStream)
@@ -75,9 +76,16 @@ ${c.gray('dependencies:')} ${c.cyan(Object.keys(info.dependencies).length.toStri
 
 		const key = await getK()
 
+		const answer = key.name === 'y' || key.name === 'return'
+
+		if (!answer) {
+			write(c.red('n'))
+		}
+
+		write(ansiEscapes.cursorShow)
 		write('\n\n')
 
-		return key.name === 'y' || key.name === 'return'
+		return answer
 	}
 
 	return {

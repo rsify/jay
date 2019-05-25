@@ -4,7 +4,7 @@ import path from 'path'
 import {inspect} from 'util'
 
 import envPaths from 'env-paths'
-
+import execa from 'execa'
 import figures from 'figures'
 import wrapAwait from 'wrap-await'
 import {default as c} from 'chalk'
@@ -94,7 +94,7 @@ async function processRequired({
 					),
 					'installed',
 					installed ?
-						`in ${Math.round(installed.elapsed / 10000) * 10000}s!` :
+						`in ${Math.round(installed.elapsed * 10000) / 10000000}s!` :
 						'!'
 				))
 			}
@@ -122,7 +122,26 @@ async function processRequired({
 	}
 }
 
-function main(): void {
+function hello() {
+	const version = (name: string, version: string) =>
+		c.gray(c.bold.green(name) + '@' + version)
+
+	console.log(
+		c.yellow(`node ${process.version}`),
+		version('npm', execa.sync('npm', ['-v']).stdout),
+		version(packageJson.name, packageJson.version)
+	)
+
+	console.log(c.gray(
+		'Type',
+		`\`${(c.blue('> jay.help()'))}\``,
+		'in the prompt, or',
+		`\`${(c.blue('$ jay --help'))}\``,
+		'in the command line for more information.'
+	))
+}
+
+function main() {
 	const history: string[] = []
 
 	const moduler = createModuler(
@@ -143,6 +162,8 @@ function main(): void {
 
 	const completeFn = (line: string, cursor: number) =>
 		complete(context, line, cursor)
+
+	hello()
 
 	async function processPrompt(): Promise<void> {
 		const [command, payload] = await promptLine(history, completeFn)
