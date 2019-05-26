@@ -15,6 +15,7 @@ import {clamp, flatten, times, uniqBy} from 'lodash'
 import * as scroll from './scroll'
 import {Commands, PromptResult} from './commands'
 import {CompletionsMeta} from './complete'
+import {PureEvaluator} from './eval'
 import {debug, getColumnSizes, time} from './util'
 
 export interface KeypressDetails {
@@ -49,10 +50,13 @@ const OPTIONS = {
 	menuHeight: 5
 }
 
-export default function promptLine(
-	history: string[],
+export default function promptLine({
+	history, complete, pureEvaluate
+}: {
+	history: string[]
 	complete: CompletionFunction
-): Promise<PromptResult> {
+	pureEvaluate: PureEvaluator
+}): Promise<PromptResult> {
 	return new Promise(resolve => {
 		const pre = c.bold.gray('> ')
 
@@ -89,6 +93,7 @@ export default function promptLine(
 		let cursorPosition: [number, number] = [0, 0]
 		let menuItems: [string, string][] = []
 		let stopping = false
+		let eager: string | undefined
 
 		// If `scroller` is not undefined, completion menu is open
 		let scroller: scroll.ScrollInfo | undefined
@@ -142,7 +147,7 @@ export default function promptLine(
 				pre +
 				beforeCursor +
 				afterCursor +
-				' '
+				' ' + (eager ? c.gray(`// ${eager}`) : '')
 
 			debug('out')
 			stdout.write(out)
@@ -268,10 +273,10 @@ export default function promptLine(
 		}
 
 		// eslint-disable-next-line complexity
-		function keypressListener(
+		async function keypressListener(
 			key: string | undefined,
 			details: KeypressDetails
-		): void {
+		): Promise<void> {
 			const keyTime = time('key')
 
 			const {shift, ctrl, name, sequence} = details
@@ -413,6 +418,10 @@ export default function promptLine(
 			}
 
 			debug(`scroller = ${JSON.stringify(scroller)}`)
+
+			const eagerEvalTime = time('eagerEval')
+			eager = await pureEvaluate(rl.line)
+			debug(eagerEvalTime())
 
 			rerender()
 

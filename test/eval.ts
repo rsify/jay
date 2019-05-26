@@ -1,16 +1,17 @@
 import test, {ExecutionContext} from 'ava'
 
 import pSeries from 'p-series'
+import * as semver from 'semver'
 
 import {
 	EvaluationResults,
 	Evaluator,
+	PureEvaluator,
 	OutputResults,
-	SideEffectError,
 	createEvaluator
 } from '../source/eval'
 
-const out = (output: any): OutputResults => ({output})
+const out = (output: unknown): OutputResults => ({output})
 const err = (error: Error): EvaluationResults => ({error})
 
 test('context globals', t => {
@@ -21,25 +22,26 @@ test('context globals', t => {
 	t.assert(isNaN(context.NaN))
 })
 
-type RunCases =
+type RunBasicCases =
 	(t: ExecutionContext, ev?: Evaluator) =>
 	(cases: [string, EvaluationResults][]) =>
 	Promise<void>
 
-const runCases: RunCases = (t, ev = createEvaluator().evaluate) => cases =>
+const runBasicCases: RunBasicCases = (t, ev = createEvaluator().evaluate) => cases =>
 	pSeries(cases.map(([input, expected]) => async () =>
 		t.deepEqual(await ev(input), expected, input)
 	)).then(() => {}) // eslint-disable-line promise/prefer-await-to-then
 
-test('eval - basic', t => runCases(t)([
+test('eval - basic', t => runBasicCases(t)([
 	['5', out(5)],
 	['"hello"', out('hello')],
 	['const x = 10', out(undefined)],
 	['x', out(10)],
-	['{one: 1}', out({one: 1})]
+	['{one: 1}', out({one: 1})],
+	['throw new Error()', err(new Error())]
 ]))
 
-test('eval - underscore', t => runCases(t)([
+test('eval - underscore', t => runBasicCases(t)([
 	['_', out(undefined)],
 	['5', out(5)],
 	['_', out(5)],
@@ -48,7 +50,7 @@ test('eval - underscore', t => runCases(t)([
 	['_', out(undefined)]
 ]))
 
-test('eval - globals', t => runCases(t)([
+test('eval - globals', t => runBasicCases(t)([
 	['setTimeout', out(setTimeout)],
 	['setInterval', out(setInterval)],
 	['setImmediate', out(setImmediate)],
@@ -61,19 +63,57 @@ test('eval - private global', async t => {
 	t.not((await ev('global') as OutputResults).output, global)
 })
 
-const sideEffectErr =
-	new SideEffectError('Possible side-effect during evaluation')
-
 const ctx = {
 	a: 10,
 	b: 'hello',
-	c: Symbol('foo')
+	c: Symbol('foo'),
+	d: {
+		hello: 'world'
+	}
 }
 
-test.skip('pure', t => runCases(t, createEvaluator(ctx).pureEvaluate)([
-	['a = 0', err(sideEffectErr)],
-	['100', out(100)],
-	['a', out(10)],
-	['b', out('hello')],
-	['c', out(Symbol('foo'))]
-]))
+type RunPureCases =
+	(t: ExecutionContext, ev?: PureEvaluator) =>
+	(cases: [string, string | undefined][]) =>
+	Promise<void>
+
+const runPureCases: RunPureCases = (t, ev = createEvaluator().pureEvaluate) => cases =>
+	pSeries(cases.map(([input, expected]) => async () =>
+		t.deepEqual(await ev(input), expected, input)
+	)).then(() => {}) // eslint-disable-line promise/prefer-await-to-then
+
+if (semver.lt(process.version, '12.3.0')) {
+	test.skip('pure', t => t.fail())
+} else {
+	test('pure', t => runPureCases(t, createEvaluator(ctx).pureEvaluate)([
+		['a = 0', undefined], // Side effects - no result
+		['100', '100'],
+		['a', '10'],
+		['b', '"hello"'],
+		['Symbol("foo")', 'Symbol(foo)'],
+		['undefined', 'undefined'],
+		['"str"', '"str"'],
+		['10', '10'],
+		['1e301', '1e+301'],
+		['Infinity', 'Infinity'],
+		['-Infinity', '-Infinity'],
+		['NaN', 'NaN'],
+		['true', 'true'],
+		['false', 'false'],
+		['Symbol()', 'Symbol()'],
+		['() => {}', 'function'],
+		['null', 'null'],
+		['/50/g', '/50/g'],
+		['new Date(0)', '1970-01-01T00:00:00.000Z'],
+		['new Set([1, 2, 3])', 'Set { 3 elements }'],
+		['new Map([[1, 2], [3, 4]])', 'Map { 2 elements }'],
+		['new Error()', 'Error'],
+		['new TypeError()', 'TypeError'],
+		['new Promise(() => {})', undefined],
+		['{}', 'Object'],
+		['[]', 'Array(0)'],
+		['[1, 2, 3]', 'Array(3)'],
+		['[[1], 2, [3, 4, [5]]]', 'Array(3)'],
+		['d', 'Object']
+	]))
+}

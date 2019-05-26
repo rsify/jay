@@ -1,9 +1,14 @@
 import {Console} from 'console' // eslint-disable-line node/prefer-global/console
 import {Context, Script} from 'vm'
 
-import {LooseObject} from './util'
+import semver from 'semver'
 
-import {createContext, Runtime} from './inspector'
+import {LooseObject} from './util'
+import {
+	createContext,
+	EvaluateReturnType,
+	runtime
+} from './inspector'
 
 export interface ErrorResults {
 	error: Error
@@ -17,17 +22,73 @@ export type EvaluationResults = ErrorResults | OutputResults
 
 export type Evaluator = (line: string) => Promise<EvaluationResults>
 
-export class SideEffectError extends Error {
-	constructor(message: string) {
-		super(message)
-		this.name = 'SideEffectError'
+// This function executes code via v8's inspector api, hence the only returned
+// thing is a stringified representation of the resulting object.
+export type PureEvaluator = (line: string) => Promise<string | undefined>
+
+function prettyPrintEvaluateResults(result: EvaluateReturnType['result']) {
+	if (result.type === 'undefined') {
+		return 'undefined'
+	}
+
+	if (result.type === 'string') {
+		return `"${result.value}"`
+	}
+
+	if (result.type === 'number') {
+		if (result.value) {
+			return result.value.toString()
+		}
+
+		// Handles Nan's & Infinities
+		return result.description
+	}
+
+	if (result.type === 'boolean') {
+		return result.value.toString()
+	}
+
+	if (result.type === 'symbol') {
+		return result.description
+	}
+
+	if (result.type === 'function') {
+		return 'function'
+	}
+
+	if (result.type === 'object') {
+		if (result.subtype === 'null') {
+			return 'null'
+		}
+
+		if (result.subtype === 'array') {
+			return result.description
+		}
+
+		if (result.subtype === 'regexp') {
+			return result.description
+		}
+
+		if (result.subtype === 'date' && result.description) {
+			return new Date(result.description).toISOString()
+		}
+
+		if (['map', 'set'].includes(result.subtype || '') && result.preview && result.preview.entries) {
+			return `${result.className} { ${result.preview.entries.length} elements }`
+		}
+
+		if (result.subtype === 'error') {
+			return result.className
+		}
+
+		return 'Object'
 	}
 }
 
 export function createEvaluator(ctx: LooseObject = {}): {
 	context: Context
 	evaluate: Evaluator
-	pureEvaluate: Evaluator
+	pureEvaluate: PureEvaluator
 } {
 	const template: LooseObject = {}
 
@@ -73,7 +134,7 @@ export function createEvaluator(ctx: LooseObject = {}): {
 			`(${line})` :
 			line
 
-	const evaluate: Evaluator = async line => {
+	const evaluate = async (line: string) => {
 		line = wrapIfNeeded(line)
 
 		const script = new Script(line)
@@ -88,39 +149,38 @@ export function createEvaluator(ctx: LooseObject = {}): {
 		}
 	}
 
-	// Bugged due to https://github.com/nodejs/node/issues/27518, will be used
-	// for eager eval in the future.
-	const pureEvaluate: Evaluator = async line => {
+	const pureEvaluate = async (line: string) => {
+		if (semver.lt(process.version, '12.3.0')) {
+			// Not supported before because of
+			// https://github.com/nodejs/node/issues/27518
+			return undefined
+		}
+
 		line = wrapIfNeeded(line)
 
-		const output = await Runtime.evaluate({
-			expression: line,
-			silent: true,
-			contextId: await contextIdPromise,
-			generatePreview: true,
-			throwOnSideEffect: true
-		})
+		let output
+		try {
+			output = await runtime.evaluate({
+				awaitPromise: true,
+				contextId: await contextIdPromise,
+				expression: line,
+				generatePreview: true,
+				silent: true,
+				throwOnSideEffect: true,
+				timeout: 500,
+				userGesture: true
+			})
+		} catch {
+			return undefined
+		}
 
 		if (output.exceptionDetails) {
-			const {description} = output.exceptionDetails.exception
-
-			if (description.startsWith('EvalError: Possible side-effect in')) {
-				console.log(description)
-				return {
-					error: new SideEffectError(
-						'Possible side-effect during evaluation'
-					)
-				}
-			}
-
-			return {
-				error: new Error(description)
-			}
+			return undefined
 		}
 
-		return {
-			output: output.result
-		}
+		const {result} = output as EvaluateReturnType
+
+		return prettyPrintEvaluateResults(result)
 	}
 
 	return {

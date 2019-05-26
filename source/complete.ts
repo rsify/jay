@@ -1,6 +1,6 @@
 import vm from 'vm'
 
-import {Runtime} from './inspector'
+import {runtime} from './inspector'
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export function getAllPropertyNames(obj: object | Function): Completions {
@@ -11,7 +11,7 @@ export function getAllPropertyNames(obj: object | Function): Completions {
 }
 
 export async function getGlobalLexicalScopeNames() {
-	const result = await Runtime.globalLexicalScopeNames({
+	const result = await runtime.globalLexicalScopeNames({
 		executionContextId: 2
 	})
 

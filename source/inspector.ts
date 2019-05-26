@@ -1,5 +1,5 @@
 import vm from 'vm'
-import {Session} from 'inspector'
+import {Runtime, Session} from 'inspector'
 
 interface ContextResult<T> {
 	contextIdPromise: Promise<number>
@@ -60,4 +60,5 @@ export function createContext<T extends {}>(base: T): ContextResult<T> {
 	}
 }
 
-export const Runtime = createProxy('Runtime')
+export const runtime = createProxy('Runtime')
+export interface EvaluateReturnType extends Runtime.EvaluateReturnType {}

@@ -154,7 +154,7 @@ function main() {
 		process.stdout
 	)
 
-	const {context, evaluate} = createEvaluator({
+	const {context, evaluate, pureEvaluate} = createEvaluator({
 		require: moduler.require
 	})
 
@@ -166,7 +166,11 @@ function main() {
 	hello()
 
 	async function processPrompt(): Promise<void> {
-		const [command, payload] = await promptLine(history, completeFn)
+		const [command, payload] = await promptLine({
+			history,
+			complete: completeFn,
+			pureEvaluate
+		})
 
 		switch (command) {
 			case Commands.Line: {
