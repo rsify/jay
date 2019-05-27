@@ -8,9 +8,11 @@ import {
 import {PassThrough} from 'stream'
 
 import ansiEscapes from 'ansi-escapes'
-import {default as c} from 'chalk'
+import emphasize from 'emphasize'
+import sliceAnsi from 'slice-ansi'
 import stripAnsi from 'strip-ansi'
 import {clamp, flatten, times, uniqBy} from 'lodash'
+import {default as c} from 'chalk'
 
 import * as scroll from './scroll'
 import {Commands, PromptResult} from './commands'
@@ -49,6 +51,21 @@ export type CompletionFunction =
 const OPTIONS = {
 	menuHeight: 5
 }
+
+/* eslint-disable @typescript-eslint/camelcase */
+const highlightSheet: emphasize.Sheet = {
+	keyword: c.magenta,
+	built_in: c.cyan.italic,
+	literal: c.cyan,
+	number: c.yellow,
+	regexp: c.red,
+	string: c.green,
+	symbol: c.cyan,
+	class: c.yellow.italic,
+	attr: c.cyan,
+	comment: c.gray
+}
+/* eslint-enable @typescript-eslint/camelcase */
 
 export default function promptLine({
 	history, complete, pureEvaluate
@@ -116,8 +133,16 @@ export default function promptLine({
 				menuItems[scroller.selected === -1 ? 0 : scroller.selected][0] :
 				''
 
+			const lineHighlightTime = time('lineHighlight')
+			const highlightedLine =
+				emphasize.highlight('js', rl.line, highlightSheet).value
+			debug(lineHighlightTime())
+
+			const slice = (start: number, end?: number) =>
+				sliceAnsi(highlightedLine, start, end)
+
 			const beforeCursor = (() => {
-				const sliced = rl.line.slice(0, rl.cursor)
+				const sliced = slice(0, rl.cursor)
 
 				if (menuItems.length === 0) {
 					return sliced
@@ -135,7 +160,7 @@ export default function promptLine({
 				return sliced
 			})()
 
-			const afterCursor = rl.line.slice(rl.cursor)
+			const afterCursor = slice(rl.cursor)
 
 			debug(`rl.line = ${rl.line}`)
 			debug(`rl.cursor = ${rl.cursor}`)
