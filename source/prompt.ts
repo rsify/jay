@@ -419,9 +419,13 @@ export default function promptLine({
 
 			debug(`scroller = ${JSON.stringify(scroller)}`)
 
-			const eagerEvalTime = time('eagerEval')
-			eager = await pureEvaluate(rl.line)
-			debug(eagerEvalTime())
+			if (rl.line.length > 0) {
+				const eagerEvalTime = time('eagerEval')
+				eager = await pureEvaluate(rl.line)
+				debug(eagerEvalTime())
+			} else {
+				eager = undefined
+			}
 
 			rerender()
 
