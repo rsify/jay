@@ -46,6 +46,7 @@
 		"s-ago": "^2.0.1",
 		"semver": "^6.1.0",
 		"strip-ansi": "^5.2.0",
+		"update-notifier": "^3.0.0",
 		"wrap-ansi": "^5.1.0",
 		"wrap-await": "^1.0.0"
 	},
@@ -56,6 +57,7 @@
 		"@types/node": "^11.13.5",
 		"@types/resolve": "0.0.8",
 		"@types/semver": "^6.0.0",
+		"@types/update-notifier": "^2.5.0",
 		"@types/wrap-ansi": "^3.0.0",
 		"@typescript-eslint/eslint-plugin": "^1.6.0",
 		"ava": "^1.4.1",

@@ -9,6 +9,7 @@ import figures from 'figures'
 import wrapAwait from 'wrap-await'
 import {default as c} from 'chalk'
 import {uniq} from 'lodash'
+import updateNotifier from 'update-notifier'
 
 import complete from './complete'
 import promptLine from './prompt'
@@ -34,6 +35,10 @@ import {
 	returnError
 } from './util'
 import {Ask, createAsk} from './ask'
+
+updateNotifier({
+	pkg: packageJson
+}).notify()
 
 async function processRequired({
 	required,
