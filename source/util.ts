@@ -108,6 +108,7 @@ export const packageJson = t.intersection([
 		name: t.string,
 		version: t.string,
 		description: t.string,
+		homepage: t.string,
 		author: t.type({
 			name: t.string,
 			email: t.string,

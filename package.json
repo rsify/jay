@@ -4,6 +4,7 @@
 	"description": "Supercharged NodeJS REPL",
 	"license": "MIT",
 	"repository": "nikersify/jay",
+	"homepage": "https://github.com/nikersify/jay#readme",
 	"author": {
 		"name": "Maciej Łaszcz",
 		"email": "nikersify@nikerino.com",
@@ -40,6 +41,7 @@
 		"io-ts": "^1.8.6",
 		"lodash": "^4.17.11",
 		"make-dir": "^3.0.0",
+		"open": "^6.3.0",
 		"ora": "^3.4.0",
 		"pacote": "^9.5.0",
 		"read-pkg-up": "^6.0.0",

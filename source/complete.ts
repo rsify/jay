@@ -1,7 +1,5 @@
 import vm from 'vm'
 
-import {runtime} from './inspector'
-
 // eslint-disable-next-line @typescript-eslint/ban-types
 export function getAllPropertyNames(obj: object | Function): Completions {
 	const proto = Object.getPrototypeOf(obj)

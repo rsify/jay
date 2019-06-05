@@ -6,6 +6,7 @@ import {inspect} from 'util'
 import envPaths from 'env-paths'
 import execa from 'execa'
 import figures from 'figures'
+import open from 'open'
 import updateNotifier from 'update-notifier'
 import wrapAnsi from 'wrap-ansi'
 import wrapAwait from 'wrap-await'
@@ -128,6 +129,10 @@ async function processRequired({
 	}
 }
 
+function help() {
+	open(packageJson.homepage)
+}
+
 function hello() {
 	const version = (name: string, version: string) =>
 		c.gray(c.bold.green(name) + '@' + version)
@@ -141,9 +146,7 @@ function hello() {
 	console.log(wrapAnsi(c.gray(
 		'Type',
 		`\`${(c.blue('> jay.help()'))}\``,
-		'in the prompt, or',
-		`\`${(c.blue('$ jay --help'))}\``,
-		'in the command line for more information.'
+		'in the prompt for more information.'
 	), process.stdout.columns || Infinity))
 }
 
@@ -161,7 +164,10 @@ function main() {
 	)
 
 	const {context, evaluate, pureEvaluate} = createEvaluator({
-		require: moduler.require
+		require: moduler.require,
+		jay: {
+			help
+		}
 	})
 
 	addBuiltinsToObject(context)
