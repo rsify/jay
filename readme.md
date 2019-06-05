@@ -14,7 +14,7 @@
 
 <p align="center">
 	<img src="media/features/eager-eval.gif"><br>
-	Eager eval
+	Eager eval (requires <code>node >= 12.3.0</code>)
 </p>
 <br>
 
