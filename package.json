@@ -25,6 +25,7 @@
 	"files": [
 		"dist"
 	],
+	"types": "dist",
 	"dependencies": {
 		"acorn": "^6.1.1",
 		"acorn-walk": "^6.1.1",
