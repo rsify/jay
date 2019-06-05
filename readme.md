@@ -219,6 +219,8 @@ $ npm test
 5. Commit
 6. Submit a PR!
 
+This repository uses Git LFS for storing readme's gifs, if you want to view them locally you will need to install and set up the [Git LFS](https://git-lfs.github.com) extension on your machine.
+
 # License
 
 MIT © [nikersify](https://nikerino.com)
