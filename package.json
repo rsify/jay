@@ -1,7 +1,7 @@
 {
 	"name": "jay-repl",
 	"version": "0.0.0",
-	"description": "Supercharged node.js repl",
+	"description": "Supercharged NodeJS REPL",
 	"license": "MIT",
 	"repository": "nikersify/jay",
 	"author": {
