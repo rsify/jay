@@ -6,10 +6,11 @@ import {inspect} from 'util'
 import envPaths from 'env-paths'
 import execa from 'execa'
 import figures from 'figures'
+import updateNotifier from 'update-notifier'
+import wrapAnsi from 'wrap-ansi'
 import wrapAwait from 'wrap-await'
 import {default as c} from 'chalk'
 import {uniq} from 'lodash'
-import updateNotifier from 'update-notifier'
 
 import complete from './complete'
 import promptLine from './prompt'
@@ -101,7 +102,7 @@ async function processRequired({
 					installed ?
 						`in ${Math.round(installed.elapsed * 10000) / 10000000}s!` :
 						'!'
-				))
+				) + '\n')
 			}
 		} else {
 			const loc =	resolved.location === 'global cache' ?
@@ -137,13 +138,13 @@ function hello() {
 		version(packageJson.name, packageJson.version)
 	)
 
-	console.log(c.gray(
+	console.log(wrapAnsi(c.gray(
 		'Type',
 		`\`${(c.blue('> jay.help()'))}\``,
 		'in the prompt, or',
 		`\`${(c.blue('$ jay --help'))}\``,
 		'in the command line for more information.'
-	))
+	), process.stdout.columns || Infinity))
 }
 
 function main() {
