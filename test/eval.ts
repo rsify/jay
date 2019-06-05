@@ -24,7 +24,7 @@ test('context globals', t => {
 
 type RunBasicCases =
 	(t: ExecutionContext, ev?: Evaluator) =>
-	(cases: [string, EvaluationResults][]) =>
+	(cases: Array<[string, EvaluationResults]>) =>
 	Promise<void>
 
 const runBasicCases: RunBasicCases = (t, ev = createEvaluator().evaluate) => cases =>
@@ -74,7 +74,7 @@ const ctx = {
 
 type RunPureCases =
 	(t: ExecutionContext, ev?: PureEvaluator) =>
-	(cases: [string, string | undefined][]) =>
+	(cases: Array<[string, string | undefined]>) =>
 	Promise<void>
 
 const runPureCases: RunPureCases = (t, ev = createEvaluator().pureEvaluate) => cases =>

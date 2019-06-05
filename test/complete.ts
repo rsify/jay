@@ -43,7 +43,7 @@ const completeMacro = (
 	t.deepEqual(complete(
 		createContext(context),
 		input.replace(C, ''),
-		input.indexOf(C) === -1 ? input.length : input.indexOf(C)
+		input.includes(C) ? input.indexOf(C) : input.length
 	), {
 		completions,
 		...completee === undefined ? {} : {completee}

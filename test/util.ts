@@ -9,7 +9,7 @@ import {
 } from '../source/util'
 
 test('getColumnSizes', t => {
-	const cases: [string[][], number[]][] = [
+	const cases: Array<[string[][], number[]]> = [
 		[[], []],
 		[[['1'], ['3']], [1]],
 		[[['one', 'two'], ['three', 'a'], ['b', 'cd']], [5, 3]],

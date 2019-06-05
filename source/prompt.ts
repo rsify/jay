@@ -108,7 +108,7 @@ export default function promptLine({
 
 		let rendered = ''
 		let cursorPosition: [number, number] = [0, 0]
-		let menuItems: [string, string][] = []
+		let menuItems: Array<[string, string]> = []
 		let stopping = false
 		let eager: string | undefined
 
