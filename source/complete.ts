@@ -10,14 +10,6 @@ export function getAllPropertyNames(obj: object | Function): Completions {
 	return [props].concat(proto ? getAllPropertyNames(proto) : [])
 }
 
-export async function getGlobalLexicalScopeNames() {
-	const result = await runtime.globalLexicalScopeNames({
-		executionContextId: 2
-	})
-
-	console.log(result)
-}
-
 const moveItemToStart = <T>(item: T, array: T[]): T[] => {
 	const index = array.indexOf(item)
 
