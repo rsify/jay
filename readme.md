@@ -1,4 +1,4 @@
-# Jay [![Build Status](https://travis-ci.com/nikersify/jay.svg?token=c7oPsWTPpETijSnB7xF2&branch=master)](https://travis-ci.com/nikersify/jay) ![npm](https://img.shields.io/npm/v/jay-repl.svg)
+# Jay [![Build Status](https://travis-ci.com/nikersify/jay.svg?token=c7oPsWTPpETijSnB7xF2&branch=master)](https://travis-ci.com/nikersify/jay) [![npm](https://img.shields.io/npm/v/jay-repl.svg)](https://npmjs.com/package/jay-repl)
 
 > Supercharged JavaScript REPL :sunglasses:
 
@@ -10,25 +10,25 @@ Here are the most important features that differentiate Jay from other REPL's:
 
 <br>
 <p align="center">
-	<img src="media/features/npm-require.gif"><br>
+	<img src="https://github.com/nikersify/jay/raw/master/media/features/npm-require.gif"><br>
 	<code>require</code> modules directly from the registry
 </p>
 <br>
 
 <p align="center">
-	<img src="media/features/eager-eval.gif"><br>
+	<img src="https://github.com/nikersify/jay/raw/master/media/features/eager-eval.gif"><br>
 	Eager eval (requires <code>node >= 12.3.0</code>)
 </p>
 <br>
 
 <p align="center">
-	<img src="media/features/top-level-await.gif"><br>
+	<img src="https://github.com/nikersify/jay/raw/master/media/features/top-level-await.gif"><br>
 	Top level <code>await</code>
 </p>
 <br>
 
 <p align="center">
-	<img src="media/features/completion.gif"><br>
+	<img src="https://github.com/nikersify/jay/raw/master/media/features/completion.gif"><br>
 	Typeahead + dropdown menu-style completion
 </p>
 <br>
