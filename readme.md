@@ -1,9 +1,12 @@
-# Jay [![Build Status](https://travis-ci.com/nikersify/jay.svg?token=c7oPsWTPpETijSnB7xF2&branch=master)](https://travis-ci.com/nikersify/jay)
+# Jay [![Build Status](https://travis-ci.com/nikersify/jay.svg?token=c7oPsWTPpETijSnB7xF2&branch=master)](https://travis-ci.com/nikersify/jay) ![npm](https://img.shields.io/npm/v/jay-repl.svg)
 
 > Supercharged JavaScript REPL :sunglasses:
 
+<hr>
 
-# Features
+Jay is a terminal-based JavaScript REPL focused on increasing prototyping speed and productivity. It's packed with modern REPL features, whilst also striving to maintain a familiar REPL vibe.
+
+Here are the most important features that differentiate Jay from other REPL's:
 
 <br>
 <p align="center">
@@ -40,9 +43,9 @@
 
 # Why
 
-Jay was pretty much created with two goals in mind:
-1. To create a super quick environment for prototyping/running npm dependent JavaScript code
-2. To bring modern JavaScript REPL features to the terminal, like eager eval, top level `await` and typeahead code completion.
+Jay was created with two goals in mind:
+1. To bring modern JavaScript REPL features to the terminal, like eager eval, top level `await` and typeahead code completion
+2. To create a super quick environment for prototyping/running npm dependent JavaScript code.
 
 It would probably make sense to split Jay into separate packages (just the REPL into one, and the smart `require` into another) in the future, to allow better reusability of the REPL components.
 
@@ -107,7 +110,11 @@ Jay expects itself to be installed globally:
 $ npm install -g jay-repl
 ```
 
-There's no programmatic API to start Jay at the moment.
+Then simply run it by typing `jay` in the terminal:
+
+```sh
+$ jay
+```
 
 
 # FAQ
