@@ -7,6 +7,7 @@ import envPaths from 'env-paths'
 import execa from 'execa'
 import figures from 'figures'
 import open from 'open'
+import semver from 'semver'
 import updateNotifier from 'update-notifier'
 import wrapAnsi from 'wrap-ansi'
 import wrapAwait from 'wrap-await'
@@ -36,7 +37,21 @@ import {
 	packageJson,
 	returnError
 } from './util'
+
 import {Ask, createAsk} from './ask'
+
+if (semver.lt(process.version, '10.0.0')) {
+	console.error(c.red(
+		figures.cross,
+		c.bold(packageJson.name),
+		'requires at least',
+		c.bold('node v10.0.0'),
+		'to run.',
+		`(you have ${c.bold(process.version)})`
+	))
+
+	process.exit(1)
+}
 
 updateNotifier({
 	pkg: packageJson
