@@ -116,6 +116,12 @@ Then simply run it by typing `jay` in the terminal:
 $ jay
 ```
 
+Alternatively, Jay can be directly run with Node builtin `npx`:
+
+```sh
+$ npx -p jay-repl jay
+```
+
 
 # FAQ
 
