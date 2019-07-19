@@ -25,6 +25,10 @@ import {
 } from './eval'
 
 import {
+	createHistorian
+} from './history'
+
+import {
 	FindRequiredOutput,
 	Moduler,
 	RegistryError,
@@ -166,7 +170,9 @@ function hello() {
 }
 
 function main() {
-	const history: string[] = []
+	const historian = createHistorian(
+		path.join(envPaths(packageJson.name).cache, 'history')
+	)
 
 	const moduler = createModuler(
 		path.join(envPaths(packageJson.name).cache, 'packages')
@@ -194,7 +200,7 @@ function main() {
 
 	async function processPrompt(): Promise<void> {
 		const [command, payload] = await promptLine({
-			history,
+			history: historian.history,
 			complete: completeFn,
 			pureEvaluate
 		})
@@ -202,7 +208,13 @@ function main() {
 		switch (command) {
 			case Commands.Line: {
 				const {line} = payload as LineResult
-				history.unshift(line)
+
+				if (line.length === 0) {
+					processPrompt()
+					break
+				}
+
+				historian.commit(line)
 
 				let wrappedLine
 				let required
