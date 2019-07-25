@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import * as path from 'path'
 
 import test from 'ava'
 
@@ -65,4 +66,14 @@ test('truncates file upon initialization if it\'s too long', t => {
 		readHistory().trim().split('\n'),
 		expectedTruncatedHistory.reverse()
 	)
+})
+
+test('mkdir -p\'s its history file path', t => {
+	const baseDirectory = tempy.directory()
+	const targetDirectory = path.join(baseDirectory, 'deep', 'nest')
+	const targetPath = path.join(targetDirectory, 'file')
+
+	createHistorian(targetPath)
+
+	t.true(fs.existsSync(targetPath))
 })
