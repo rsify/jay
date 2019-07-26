@@ -176,7 +176,7 @@ Requiring the file again will, unfortunately, not change the output:
 // 'hello hello hello '
 ```
 
-Jay, as beforementioned, doesn't cache modules. Repeating the steps yields the result we actually want in this case:
+Jay, as before mentioned, doesn't cache modules. Repeating the steps yields the result we actually want in this case:
 ```bash
 $ jay
 $ echo "module.exports = x => 'hello '.repeat(x) > greet.js"
