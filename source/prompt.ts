@@ -46,7 +46,7 @@ const hasPrePair = hasXPair(1)
 const noop = <T>(x: T): T => x
 
 export type CompletionFunction =
-	(line: string, cursor: number) => CompletionsMeta
+	(line: string, cursor: number) => Promise<CompletionsMeta>
 
 const OPTIONS = {
 	menuHeight: 5
@@ -424,7 +424,7 @@ export default function promptLine({
 				menuItems = []
 			} else if (name !== 'tab' || scroller === undefined) {
 				const completionsTime = time('completions')
-				const result = complete(rl.line, rl.cursor)
+				const result = await complete(rl.line, rl.cursor)
 				debug(completionsTime())
 
 				completee = result.completee

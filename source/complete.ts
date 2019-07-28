@@ -1,11 +1,21 @@
 import vm from 'vm'
 
+import {runtime} from './inspector'
+
 // eslint-disable-next-line @typescript-eslint/ban-types
 export function getAllPropertyNames(obj: object | Function): Completions {
 	const proto = Object.getPrototypeOf(obj)
 	const props = Object.getOwnPropertyNames(obj)
 
 	return [props].concat(proto ? getAllPropertyNames(proto) : [])
+}
+
+export async function getGlobalLexicalScopeNames(contextId: number): Promise<string[]> {
+	const {names} = await runtime.globalLexicalScopeNames({
+		executionContextId: contextId
+	})
+
+	return names
 }
 
 const moveItemToStart = <T>(item: T, array: T[]): T[] => {
@@ -31,11 +41,12 @@ export interface CompletionsMeta {
 
 // Create relevant code completions for the given `context` and `line`, at
 // `cursor`.
-export default (
+export default async (
 	context: vm.Context,
+	contextId: number,
 	line: string,
 	cursor: number
-): CompletionsMeta => {
+): Promise<CompletionsMeta> => {
 	if (!vm.isContext(context)) {
 		throw new TypeError(
 			'Expected `context` to be vm.Context: ' +
@@ -98,9 +109,13 @@ export default (
 			context
 		)
 	} catch (_) {
+		const completions = [await getGlobalLexicalScopeNames(contextId)].concat(
+			getAllPropertyNames(context)
+		)
+
 		return {
 			completee: variable + (filter ? filter : ''),
-			completions: filtered(variable)(getAllPropertyNames(context))
+			completions: filtered(variable)(completions)
 		}
 	}
 

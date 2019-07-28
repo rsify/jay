@@ -1,11 +1,14 @@
-import {createContext} from 'vm'
-
 import test, {ExecutionContext} from 'ava'
 
 import complete, {
 	Completions,
 	getAllPropertyNames
 } from '../source/complete'
+
+import {
+	createContext,
+	runtime
+} from '../source/inspector'
 
 const objectPrototypePropertyNames =
 	Object.getOwnPropertyNames(Object.getPrototypeOf({}))
@@ -26,28 +29,66 @@ test('getAllPropertyNames', t => {
 	t.true(res[1].includes('valueOf'))
 })
 
-test('complete - input', t => {
-	const err = t.throws(() => complete({}, '', 0))
+test('complete - input', async t => {
+	const err = await t.throwsAsync(() => complete({}, 1, '', 0))
 	err.message.startsWith('Expected `context` to be vm.Context')
+})
+
+test('complete - global lexical scope names', async t => {
+	const {context, contextIdPromise} = createContext({})
+	const contextId = await contextIdPromise
+
+	await runtime.evaluate({
+		contextId,
+		expression: 'const hello = 0'
+	})
+
+	t.deepEqual(await complete(
+		context, contextId, 'hel', 3
+	), {
+		completions: [['hello']],
+		completee: 'hel'
+	})
+})
+
+test('complete - global lexical scope names - function', async t => {
+	const {context, contextIdPromise} = createContext({})
+	const contextId = await contextIdPromise
+
+	await runtime.evaluate({
+		contextId,
+		expression: 'function hello () {}'
+	})
+
+	t.deepEqual(await complete(
+		context, contextId, 'hel', 3
+	), {
+		completions: [['hello']],
+		completee: 'hel'
+	})
 })
 
 const C = '/--cursor--/'
 
-const completeMacro = (
+const completeMacro = async (
 	t: ExecutionContext,
-	context: object,
+	contextObject: object,
 	input: string,
 	completee: string | undefined,
 	completions: Completions
-): void => // eslint-disable-line max-params
-	t.deepEqual(complete(
-		createContext(context),
+): Promise<void> => { // eslint-disable-line max-params
+	const {context, contextIdPromise} = createContext(contextObject)
+
+	t.deepEqual(await complete(
+		context,
+		await contextIdPromise,
 		input.replace(C, ''),
 		input.includes(C) ? input.indexOf(C) : input.length
 	), {
 		completions,
 		...completee === undefined ? {} : {completee}
 	})
+}
 
 test('complete - nothing', completeMacro, {}, '', undefined, [[]])
 

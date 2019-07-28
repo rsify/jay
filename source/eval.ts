@@ -87,6 +87,7 @@ function prettyPrintEvaluateResults(result: EvaluateReturnType['result']) {
 
 export function createEvaluator(ctx: LooseObject = {}): {
 	context: Context
+	contextIdPromise: Promise<number>
 	evaluate: Evaluator
 	pureEvaluate: PureEvaluator
 } {
@@ -185,6 +186,7 @@ export function createEvaluator(ctx: LooseObject = {}): {
 
 	return {
 		context,
+		contextIdPromise,
 		evaluate,
 		pureEvaluate
 	}

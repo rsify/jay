@@ -169,7 +169,7 @@ function hello() {
 	), process.stdout.columns || Infinity))
 }
 
-function main() {
+async function main() {
 	const historian = createHistorian(
 		path.join(envPaths(packageJson.name).cache, 'history')
 	)
@@ -184,7 +184,12 @@ function main() {
 		process.stdout
 	)
 
-	const {context, evaluate, pureEvaluate} = createEvaluator({
+	const {
+		context,
+		contextIdPromise,
+		evaluate,
+		pureEvaluate
+	} = createEvaluator({
 		require: moduler.require,
 		jay: {
 			help
@@ -193,8 +198,9 @@ function main() {
 
 	addBuiltinsToObject(context)
 
+	const contextId = await contextIdPromise
 	const completeFn = (line: string, cursor: number) =>
-		complete(context, line, cursor)
+		complete(context, contextId, line, cursor)
 
 	hello()
 
