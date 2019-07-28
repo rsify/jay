@@ -216,21 +216,26 @@ You can see the exact location of the cache by simply running the following line
 # Contributing
 
 1. Fork & clone the repository
-2. Start the watcher script:
+2. Start the Typescript watch script:
 
 ```bash
 $ npm run build:watch
 ```
 
 3. Make your changes
-4. Run the tests:
+4. Try out your changes on your local build
+
+```bash
+$ node dist/cli.js
+```
+
+5. Run the tests:
 
 ```bash
 $ npm test
 ```
 
-5. Commit
-6. Submit a PR!
+6. Commit & PR!
 
 This repository uses Git LFS for storing readme's gifs, if you want to view them locally you will need to install and set up the [Git LFS](https://git-lfs.github.com) extension on your machine.
 
