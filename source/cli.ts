@@ -191,9 +191,11 @@ async function main() {
 		pureEvaluate
 	} = createEvaluator({
 		require: moduler.require,
-		jay: {
-			help
-		}
+		jay: Object.seal(Object.create(null, {
+			help: {
+				value: help
+			}
+		}))
 	})
 
 	addBuiltinsToObject(context)
