@@ -162,11 +162,10 @@ function hello() {
 		version(packageJson.name, packageJson.version)
 	)
 
-	console.log(wrapAnsi(c.gray(
-		'Type',
-		`\`${(c.blue('> jay.help()'))}\``,
-		'in the prompt for more information.'
-	), process.stdout.columns || Infinity))
+	console.log(wrapAnsi(
+		`${c.bold.magenta('jay is getting plugin support! Help us make the API suit you:')} ${c.gray('https://github.com/nikersify/jay/pull/18')}`,
+		process.stdout.columns || Infinity
+	))
 }
 
 async function main() {
