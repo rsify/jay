@@ -1,8 +1,10 @@
 import vm from 'vm'
 import {Runtime, Session} from 'inspector'
 
+import {LooseObject} from './util'
+
 interface ContextResult<T> {
-	contextIdPromise: Promise<number>
+	contextId: number
 	context: T
 }
 
@@ -36,8 +38,8 @@ const createProxy = (domain: string): any => new Proxy({} as any, {
 	}
 })
 
-export function createContext<T extends {}>(base: T): ContextResult<T> {
-	const contextIdPromise: Promise<number> = new Promise(resolve => {
+export async function createContext<T extends LooseObject>(base: T): Promise<ContextResult<T>> {
+	const contextId: number = await new Promise(resolve => {
 		// About `Runtime.enable`:
 		// https://chromedevtools.github.io/devtools-protocol/v8/Runtime#method-enable
 
@@ -55,7 +57,7 @@ export function createContext<T extends {}>(base: T): ContextResult<T> {
 	})
 
 	return {
-		contextIdPromise,
+		contextId,
 		context: base
 	}
 }

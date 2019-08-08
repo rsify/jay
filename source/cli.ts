@@ -1,48 +1,34 @@
 #!/usr/bin/env node
 
 import path from 'path'
-import {inspect} from 'util'
 
 import envPaths from 'env-paths'
 import execa from 'execa'
 import figures from 'figures'
-import open from 'open'
 import semver from 'semver'
 import updateNotifier from 'update-notifier'
 import wrapAnsi from 'wrap-ansi'
-import wrapAwait from 'wrap-await'
 import {default as c} from 'chalk'
-import {uniq} from 'lodash'
 
-import complete from './complete'
+import {
+	Jay,
+	DefaultPluggerTypes
+} from './types'
 import promptLine from './prompt'
-import {Commands, LineResult} from './commands'
 
-import {
-	createEvaluator,
-	OutputResults,
-	ErrorResults
-} from './eval'
-
-import {
-	createHistorian
-} from './history'
-
-import {
-	FindRequiredOutput,
-	Moduler,
-	RegistryError,
-	createModuler,
-	findRequired
-} from './moduler'
+import {createHistorian} from './history'
+import {createPlugger} from './plugger'
 
 import {
 	addBuiltinsToObject,
 	packageJson,
-	returnError
+	debug,
+	time
 } from './util'
 
-import {Ask, createAsk} from './ask'
+import {createContext} from './inspector'
+
+import corePlugins from './plugins'
 
 if (semver.lt(process.version, '10.0.0')) {
 	console.error(c.red(
@@ -60,97 +46,6 @@ if (semver.lt(process.version, '10.0.0')) {
 updateNotifier({
 	pkg: packageJson
 }).notify()
-
-async function processRequired({
-	required,
-	moduler,
-	ask
-}: {
-	required: FindRequiredOutput
-	moduler: Moduler
-	ask: Ask
-}) {
-	for (const pack of required.packages) {
-		/* eslint-disable no-await-in-loop */
-		const resolved = returnError(() =>
-			moduler.resolve(pack.name)
-		)
-
-		if (resolved instanceof Error) {
-			// The module id is not a relative path and
-			// couldn't be resolved, ask the user whether
-			// they want to install it
-
-			let answer: boolean
-			try {
-				answer = await ask.install(
-					pack.name,
-					pack.version
-				)
-			} catch (error) {
-				if (
-					error instanceof RegistryError &&
-					error.code === 'NOT_FOUND'
-				) {
-					console.error(c.red(
-						figures.cross,
-						'Package',
-						c.bold(pack.name) + (pack.version ?
-							c.bold(`@${pack.version}`) : ''),
-						'was not found on the registry.'
-					))
-
-					continue
-				}
-
-				console.error(error)
-				continue
-			}
-
-			if (answer) {
-				const installed = await moduler.install(
-					pack.name,
-					pack.version
-				)
-
-				console.log(c.blue(
-					figures.arrowDown,
-					c.bold(pack.name + (pack.version ?
-						c.gray.bold('@' + pack.version) : '')
-					),
-					'installed',
-					installed ?
-						`in ${Math.round(installed.elapsed * 10000) / 10000000}s!` :
-						'!'
-				) + '\n')
-			}
-		} else {
-			const loc =	resolved.location === 'global cache' ?
-				'jay\'s cache' :
-				resolved.location
-
-			console.log(
-				c.green(
-					figures.tick,
-					resolved.meta ?
-						`${
-							c.bold(resolved.meta.name)
-						}${
-							c.gray.bold('@' + resolved.meta.version)
-						}` :
-						`${c.bold(pack.name)}`
-					,
-					`imported from ${c.italic(loc)}.`
-				)
-			)
-		}
-		/* eslint-enable no-await-in-loop */
-	}
-}
-
-function help() {
-	open(packageJson.homepage)
-}
 
 function hello() {
 	const version = (name: string, version: string) =>
@@ -174,109 +69,81 @@ async function main() {
 		path.join(envPaths(packageJson.name).cache, 'history')
 	)
 
-	const moduler = createModuler(
-		path.join(envPaths(packageJson.name).cache, 'packages')
-	)
-
-	const ask = createAsk(
-		moduler,
-		process.stdin,
-		process.stdout
-	)
-
-	const {
-		context,
-		contextIdPromise,
-		evaluate,
-		pureEvaluate
-	} = createEvaluator({
-		require: moduler.require,
-		jay: Object.seal(Object.create(null, {
-			help: {
-				value: help
-			}
-		}))
+	const plugger = createPlugger<DefaultPluggerTypes>({
+		line: 'string',
+		render: ['string', 'number'],
+		keypress: {
+			sequence: 'string',
+			name: 'string',
+			ctrl: 'boolean',
+			meta: 'boolean',
+			shift: 'boolean'
+		}
 	})
+
+	const {context, contextId} = await createContext({})
 
 	addBuiltinsToObject(context)
 
-	const contextId = await contextIdPromise
-	const completeFn = (line: string, cursor: number) =>
-		complete(context, contextId, line, cursor)
-
 	hello()
 
+	const createPrompt = () => promptLine({
+		history: historian.history,
+		plugger
+	})
+
+	const jay: Jay = {
+		stdout: process.stdout,
+		stdin: process.stdin,
+		plugger,
+		on: plugger.on.bind(plugger),
+		context,
+		contextId,
+		prompt: createPrompt()
+	}
+
+	corePlugins(jay)
+
+	let first = true
 	async function processPrompt(): Promise<void> {
-		const [command, payload] = await promptLine({
-			history: historian.history,
-			complete: completeFn,
-			pureEvaluate
-		})
-
-		switch (command) {
-			case Commands.Line: {
-				const {line} = payload as LineResult
-
-				if (line.length === 0) {
-					processPrompt()
-					break
-				}
-
-				historian.commit(line)
-
-				let wrappedLine
-				let required
-				try {
-					wrappedLine = wrapAwait(line) || line
-
-					required = findRequired(wrappedLine)
-				} catch (error) {
-					console.log(c.red(error))
-
-					processPrompt()
-					break
-				}
-
-				if (required.errors.length > 0) {
-					console.log(c.red(uniq(required.errors).join('\n')))
-				} else {
-					// Iterate over all required packages, install them if
-					// they're not already, then log where they're getting
-					// required from
-					await processRequired({
-						ask,
-						moduler,
-						required
-					})
-
-					const res = await evaluate(wrappedLine)
-
-					if (typeof (res as ErrorResults).error === 'undefined') {
-						console.log(
-							inspect((res as OutputResults).output, {colors: true})
-						)
-					} else {
-						console.error((res as ErrorResults).error)
-					}
-				}
-
-				processPrompt()
-				break
-			}
-
-			case Commands.Exit: {
-				process.exit()
-			}
-
-			case Commands.Abort: {
-				processPrompt()
-				break
-			}
-
-			default: {
-				throw new Error(`Received invalid command (${command})`)
-			}
+		if (first) {
+			first = false
+		} else {
+			jay.prompt = createPrompt()
 		}
+
+		const result = await jay.prompt.resultsPromise
+
+		if (result[0] === 'Line') {
+			const line = result[1]
+
+			if (line.length === 0) {
+				processPrompt()
+				return
+			}
+
+			historian.commit(line)
+
+			const lineEnd = time('line')
+			await plugger.dispatch('line', line)
+			debug(lineEnd())
+
+			processPrompt()
+
+			return
+		}
+
+		if (result[0] === 'Exit') {
+			process.exit()
+		}
+
+		if (result[0] === 'Abort') {
+			processPrompt()
+
+			return
+		}
+
+		throw new Error(`Received invalid command (${result[0]})`)
 	}
 
 	processPrompt()
