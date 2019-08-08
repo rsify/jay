@@ -3,6 +3,7 @@ import {Jay} from '../types'
 import evaluatePlugin from './evaluate'
 import globalsPlugin from './globals'
 import highlightPlugin from './highlight'
+import pairsPlugin from './pairs'
 import ps1Plugin from './ps1'
 import quitPlugin from './quit'
 import readlineInputPlugin from './readline-input'
@@ -40,6 +41,11 @@ export default (jay: Jay) => {
 
 	// Quit bindings
 	quitPlugin(jay)
+
+	// Add/remove pair characters, e.g. entering `"` outputs
+	// `"|"` where `|` is the position of the cursor. Pressing
+	// backspace removes the whole pair.
+	pairsPlugin(jay)
 
 	// Handle enter key properly
 	returnPlugin(jay)
