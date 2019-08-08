@@ -1,5 +1,7 @@
 import {inspect} from 'util'
 
+import chalk from 'chalk'
+
 import {Jay} from '../types'
 import {
 	createEvaluator,
@@ -9,7 +11,8 @@ import {
 
 export default (jay: Jay) => {
 	const {
-		evaluate
+		evaluate,
+		pureEvaluate
 	} = createEvaluator(jay.context, jay.contextId)
 
 	// Evaluate input
@@ -25,5 +28,22 @@ export default (jay: Jay) => {
 		}
 
 		return line
+	})
+
+	// Add eager eval to the end of input
+	jay.on('render', async ([output, cursor]): Promise<[string, number]> => {
+		const {line} = jay.prompt.readline
+		if (line.length > 0) {
+			const result = await pureEvaluate(line)
+
+			if (result) {
+				return [
+					output + chalk.gray(` // ${result}`),
+					cursor
+				]
+			}
+		}
+
+		return [output, cursor]
 	})
 }

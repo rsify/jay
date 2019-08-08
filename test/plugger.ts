@@ -105,6 +105,22 @@ test('async listeners', async t => {
 	t.is(await plugger.dispatch('event', 'a'), 'abc')
 })
 
+test('async listeners - array', async t => {
+	const plugger = createPlugger({
+		event: ['string', 'number']
+	})
+
+	plugger.on('event', async ([a, n]): Promise<[string, number]> => {
+		return [a + 'b', n * 2]
+	})
+
+	plugger.on('event', async ([a, n]): Promise<[string, number]> => {
+		return [a + 'c', n * 2]
+	})
+
+	t.deepEqual(await plugger.dispatch('event', ['a', 2]), ['abc', 8])
+})
+
 test('multiple events', async t => {
 	const plugger = createPlugger({
 		str: 'string',
