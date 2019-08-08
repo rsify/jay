@@ -131,3 +131,16 @@ test('stop', async t => {
 
 	t.is(await plugger.dispatch('event', 'a'), 'abc')
 })
+
+test('.one', async t => {
+	const plugger = createPlugger({
+		event: 'string'
+	})
+
+	plugger.one('event', x => x + 'b')
+	plugger.on('event', x => x + 'c')
+
+	t.is(await plugger.dispatch('event', 'a'), 'abc')
+	t.is(await plugger.dispatch('event', 'a'), 'ac')
+	t.is(await plugger.dispatch('event', 'a'), 'ac')
+})

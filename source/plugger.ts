@@ -61,6 +61,11 @@ type MaybePromise<T> = T | Promise<T>
 type Listener<T extends CValueLike, Key extends keyof T, Input extends CValue<T[Key]> = CValue<T[Key]>> =
 	(arg: Input, stopper: typeof stop) => MaybePromise<Input | Stopped<Input>>
 
+type ListenerMeta<T extends CValueLike, Key extends keyof T> = {
+	once: boolean
+	callback: Listener<T, Key>
+}
+
 type EventKey<T> = keyof T
 
 function isStopped<T>(x: unknown | Stopped<T>): x is Stopped<T> {
@@ -68,22 +73,27 @@ function isStopped<T>(x: unknown | Stopped<T>): x is Stopped<T> {
 }
 
 export type Plugger<T extends CValueLike> = {
+	on: <Key extends EventKey<T>>(
+		key: Key,
+		callback: Listener<T, Key>
+	) => void
+
+	one: <Key extends EventKey<T>>(
+		key: Key,
+		callback: Listener<T, Key>
+	) => void
+
 	dispatch<Key extends EventKey<T>>(
 		key: Key,
 		arg: CValue<T[Key]>
 	): Promise<CValue<T[Key]>>
-
-	on<Key extends EventKey<T>>(
-		key: Key,
-		callback: Listener<T, Key>
-	): void
 }
 
 export function createPlugger<T extends CValueLike>(
 	_: T
 ): Plugger<T> {
 	const listeners: {
-		[Key in EventKey<T>]?: Array<Listener<T, Key>>
+		[Key in EventKey<T>]?: Array<ListenerMeta<T, Key>>
 	} = {}
 
 	async function dispatch<Key extends EventKey<T>>(key: Key, arg: CValue<T[Key]>): Promise<CValue<T[Key]>> {
@@ -94,11 +104,10 @@ export function createPlugger<T extends CValueLike>(
 		}
 
 		let current = arg
-		// eslint-disable-next-line @typescript-eslint/prefer-for-of
-		for (let i = 0; i < list.length; i++) {
-			const listener = list[i]
+
+		for (const listener of list.slice()) {
 			// eslint-disable-next-line no-await-in-loop
-			const val = await listener(current, stop)
+			const val = await listener.callback(current, stop)
 
 			if (isStopped(val)) {
 				current = val.value
@@ -106,26 +115,36 @@ export function createPlugger<T extends CValueLike>(
 			}
 
 			current = val
+
+			if (listener.once) {
+				list.splice(list.indexOf(listener), 1)
+			}
 		}
 
 		return current
 	}
 
-	function on<Key extends EventKey<T>>(
-		key: Key,
-		callback: Listener<T, Key>
-	): void {
-		const list = listeners[key]
+	const addListener = (once: boolean) =>
+		<Key extends EventKey<T>>(
+			key: Key,
+			callback: Listener<T, Key>
+		): void => {
+			const list = listeners[key]
+			const meta = {once, callback}
 
-		if (list === undefined) {
-			listeners[key] = [callback]
-		} else {
-			list.push(callback)
+			if (list === undefined) {
+				listeners[key] = [meta]
+			} else {
+				list.push(meta)
+			}
 		}
-	}
+
+	const on = addListener(false)
+	const one = addListener(true)
 
 	return {
 		dispatch,
-		on
+		on,
+		one
 	}
 }

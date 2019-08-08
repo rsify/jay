@@ -64,6 +64,7 @@ export type Jay = {
 	stdin: NodeJS.ReadStream
 	plugger: Plugger<DefaultPluggerTypes>
 	on: Plugger<DefaultPluggerTypes>['on']
+	one: Plugger<DefaultPluggerTypes>['one']
 	context: LooseObject
 	contextId: number
 	prompt: Prompt

@@ -97,6 +97,7 @@ async function main() {
 		stdin: process.stdin,
 		plugger,
 		on: plugger.on.bind(plugger),
+		one: plugger.one.bind(plugger),
 		context,
 		contextId,
 		prompt: createPrompt()

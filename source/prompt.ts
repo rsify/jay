@@ -14,7 +14,8 @@ import {
 	_ReadLineOptions,
 	_ReadLineInterface,
 	Prompt,
-	PromptResults
+	PromptResults,
+	DefaultPluggerTypes
 } from './types'
 
 import {CompletionsMeta} from './complete'
@@ -36,16 +37,7 @@ export default function promptLine({
 	history, plugger
 }: {
 	history: string[]
-	plugger: Plugger<{
-		render: ['string', 'number']
-		keypress: {
-			sequence: 'string'
-			name: 'string'
-			ctrl: 'boolean'
-			meta: 'boolean'
-			shift: 'boolean'
-		}
-	}>
+	plugger: Plugger<DefaultPluggerTypes>
 }): Prompt {
 	const {stdin, stdout} = process
 
