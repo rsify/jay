@@ -3,6 +3,7 @@ import {Jay} from '../types'
 import ctrlPlugin from './ctrl'
 import evaluatePlugin from './evaluate'
 import globalsPlugin from './globals'
+import helloPlugin from './hello'
 import highlightPlugin from './highlight'
 import pairsPlugin from './pairs'
 import ps1Plugin from './ps1'
@@ -53,4 +54,8 @@ export default (jay: Jay) => {
 	// Pass all keys not handled previously in plugins to
 	// `readline`
 	readlineInputPlugin(jay)
+
+	// Misc
+	// ====
+	helloPlugin(jay)
 }

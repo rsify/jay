@@ -3,11 +3,9 @@
 import path from 'path'
 
 import envPaths from 'env-paths'
-import execa from 'execa'
 import figures from 'figures'
 import semver from 'semver'
 import updateNotifier from 'update-notifier'
-import wrapAnsi from 'wrap-ansi'
 import {default as c} from 'chalk'
 
 import {
@@ -47,23 +45,6 @@ updateNotifier({
 	pkg: packageJson
 }).notify()
 
-function hello() {
-	const version = (name: string, version: string) =>
-		c.gray(c.bold.green(name) + '@' + version)
-
-	console.log(
-		c.yellow(`node ${process.version}`),
-		version('npm', execa.sync('npm', ['-v']).stdout),
-		version(packageJson.name, packageJson.version)
-	)
-
-	console.log(wrapAnsi(c.gray(
-		'Type',
-		`\`${(c.blue('> jay.help()'))}\``,
-		'in the prompt for more information.'
-	), process.stdout.columns || Infinity))
-}
-
 async function main() {
 	const historian = createHistorian(
 		path.join(envPaths(packageJson.name).cache, 'history')
@@ -84,8 +65,6 @@ async function main() {
 	const {context, contextId} = await createContext({})
 
 	addBuiltinsToObject(context)
-
-	hello()
 
 	const createPrompt = () => promptLine({
 		history: historian.history,
