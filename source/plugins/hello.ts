@@ -1,6 +1,5 @@
 import {default as c} from 'chalk'
 import execa from 'execa'
-import wrapAnsi from 'wrap-ansi'
 
 import {Jay} from '../types'
 
@@ -15,10 +14,4 @@ export default (_: Jay) => {
 		version('npm', execa.sync('npm', ['-v']).stdout),
 		version(packageJson.name, packageJson.version)
 	)
-
-	console.log(wrapAnsi(c.gray(
-		'Type',
-		`\`${(c.blue('> jay.help()'))}\``,
-		'in the prompt for more information.'
-	), process.stdout.columns || Infinity))
 }

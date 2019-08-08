@@ -82,6 +82,8 @@ async function main() {
 		prompt: createPrompt()
 	}
 
+	jay.context.jay = jay
+
 	corePlugins(jay)
 
 	let first = true

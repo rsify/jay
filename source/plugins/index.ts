@@ -4,6 +4,7 @@ import ctrlPlugin from './ctrl'
 import evaluatePlugin from './evaluate'
 import globalsPlugin from './globals'
 import helloPlugin from './hello'
+import helpPlugin from './help'
 import highlightPlugin from './highlight'
 import pairsPlugin from './pairs'
 import ps1Plugin from './ps1'
@@ -57,5 +58,10 @@ export default (jay: Jay) => {
 
 	// Misc
 	// ====
+
+	// Show node, jay & npm versions on startup
 	helloPlugin(jay)
+
+	// Display help information on startup and define jay.help()
+	helpPlugin(jay)
 }
