@@ -1,11 +1,11 @@
 import {Jay} from '../types'
 
+import ctrlPlugin from './ctrl'
 import evaluatePlugin from './evaluate'
 import globalsPlugin from './globals'
 import highlightPlugin from './highlight'
 import pairsPlugin from './pairs'
 import ps1Plugin from './ps1'
-import quitPlugin from './quit'
 import readlineInputPlugin from './readline-input'
 import returnPlugin from './return'
 import smartRequirePlugin from './smart-require'
@@ -39,8 +39,8 @@ export default (jay: Jay) => {
 	// Key handling
 	// ============
 
-	// Quit bindings
-	quitPlugin(jay)
+	// Standard ctrl+letter bindings
+	ctrlPlugin(jay)
 
 	// Add/remove pair characters, e.g. entering `"` outputs
 	// `"|"` where `|` is the position of the cursor. Pressing
