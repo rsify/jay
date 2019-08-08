@@ -38,6 +38,7 @@ function stop<T>(arg: T): Stopped<T> {
 
 export type CPrimitiveLike = CPrimitives
 
+// 🤮
 type A0 = CPrimitives
 type A1 = [A0]
 type A2 = [A0, A0]
@@ -50,9 +51,11 @@ type A8 = [A0, A0, A0, A0, A0, A0, A0, A0]
 type A9 = [A0, A0, A0, A0, A0, A0, A0, A0, A0]
 
 export type CArrayLike = A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8 | A9
+
 export type CObjectLike = {
 	[key: string]: CValueLike
 }
+
 export type CValueLike =
 	CPrimitiveLike | CArrayLike | CObjectLike
 
@@ -73,20 +76,20 @@ function isStopped<T>(x: unknown | Stopped<T>): x is Stopped<T> {
 }
 
 export type Plugger<T extends CValueLike> = {
-	on: <Key extends EventKey<T>>(
-		key: Key,
-		callback: Listener<T, Key>
-	) => void
-
-	one: <Key extends EventKey<T>>(
-		key: Key,
-		callback: Listener<T, Key>
-	) => void
-
 	dispatch<Key extends EventKey<T>>(
 		key: Key,
 		arg: CValue<T[Key]>
 	): Promise<CValue<T[Key]>>
+
+	on<Key extends EventKey<T>>(
+		key: Key,
+		callback: Listener<T, Key>
+	): void
+
+	one<Key extends EventKey<T>>(
+		key: Key,
+		callback: Listener<T, Key>
+	): void
 }
 
 export function createPlugger<T extends CValueLike>(
