@@ -9,7 +9,7 @@ import {
 	OutputResults
 } from '../eval'
 
-export default (jay: Jay) => {
+export = (jay: Jay) => {
 	const {
 		evaluate,
 		pureEvaluate

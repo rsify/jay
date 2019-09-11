@@ -2,7 +2,7 @@ import {Console} from 'console' // eslint-disable-line node/prefer-global/consol
 
 import {Jay} from '../types'
 
-export default (jay: Jay) => {
+export = (jay: Jay) => {
 	Object.getOwnPropertyNames(global).forEach(name => {
 		if (name === 'global') {
 			return

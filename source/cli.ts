@@ -16,6 +16,7 @@ import promptLine from './prompt'
 
 import {createHistorian} from './history'
 import {createPlugger} from './plugger'
+import {createRc} from './rc'
 
 import {
 	addBuiltinsToObject,
@@ -25,8 +26,6 @@ import {
 } from './util'
 
 import {createContext} from './inspector'
-
-import corePlugins from './plugins'
 
 if (semver.lt(process.version, '10.0.0')) {
 	console.error(c.red(
@@ -84,7 +83,12 @@ async function main() {
 
 	jay.context.jay = jay
 
-	corePlugins(jay)
+	const configDir = envPaths(packageJson.name).config
+	const rc = createRc(
+		path.join(configDir, 'jayrc.js')
+	)
+
+	await rc.load(jay)
 
 	let first = true
 	async function processPrompt(): Promise<void> {

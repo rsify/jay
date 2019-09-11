@@ -15,7 +15,7 @@ const hasXPair = (x: 0 | 1) => (ch: string) => pairs.map(p => p[x]).includes(ch)
 const hasPostPair = hasXPair(0)
 const hasPrePair = hasXPair(1)
 
-export default (jay: Jay) =>
+export = (jay: Jay) =>
 	jay.on('keypress', (key, stop) => {
 		const rl = jay.prompt.readline
 		const {name, sequence} = key

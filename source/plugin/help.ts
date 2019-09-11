@@ -6,7 +6,7 @@ import {Jay} from '../types'
 
 import {packageJson} from '../util'
 
-export default (jay: Jay) => {
+export = (jay: Jay) => {
 	console.log(wrapAnsi(chalk.gray(
 		'Type',
 		`\`${(chalk.blue('> jay.help()'))}\``,

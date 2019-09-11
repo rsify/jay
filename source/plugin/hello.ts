@@ -5,7 +5,7 @@ import {Jay} from '../types'
 
 import {packageJson} from '../util'
 
-export default (_: Jay) => {
+export = (_: Jay) => {
 	const version = (name: string, version: string) =>
 		c.gray(c.bold.green(name) + '@' + version)
 

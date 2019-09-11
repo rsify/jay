@@ -3,7 +3,7 @@ import chalk from 'chalk'
 
 import {Jay} from '../types'
 
-export default (jay: Jay) => {
+export = (jay: Jay) => {
 	jay.on('line', (line, stop) => {
 		try {
 			return wrapAwait(line) || line

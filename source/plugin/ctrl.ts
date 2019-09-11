@@ -3,7 +3,7 @@ import {default as c} from 'chalk'
 
 import {Jay} from '../types'
 
-export default (jay: Jay) => {
+export = (jay: Jay) => {
 	// `ctrl+d` - exit the program
 	jay.on('keypress', async key => {
 		if (key.ctrl && key.name === 'd') {

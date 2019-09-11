@@ -4,15 +4,18 @@ import path from 'path'
 
 import * as acorn from 'acorn'
 import * as t from 'io-ts'
-import {failure} from 'io-ts/lib/PathReporter'
 import * as walk from 'acorn-walk'
 import execa from 'execa'
+import figures from 'figures'
 import importFresh from 'import-fresh'
 import makeDir from 'make-dir'
-import resolve from 'resolve'
 import readPkgUp from 'read-pkg-up'
+import resolve from 'resolve'
+import {default as c} from 'chalk'
+import {failure} from 'io-ts/lib/PathReporter'
 
-import {debug, time} from './util'
+import {Ask} from './ask'
+import {debug, returnError, time} from './util'
 
 export const findRequiredErrors = {
 	parseError: 'Could not parse provided code',
@@ -26,8 +29,13 @@ export const findRequiredErrors = {
 	].join(', ')
 }
 
-export interface Resolved {
-	location: 'relative' | 'node_modules' | 'global cache'
+type ResolveLocation =
+	'relative' |
+	'node_modules' |
+	'global cache'
+
+export interface Resolved<T = ResolveLocation> {
+	location: T
 	filepath: string
 	meta?: {
 		name: string
@@ -82,8 +90,10 @@ export class RegistryError extends Error {
 	}
 }
 
-const moduleIdRegex =
-	/^((?:[^@\s/]+)|(?:@[^@\s/]+\/[^@\s/]+))(?:@([^@\s/]+))?(\/[^@\s]*)?$/
+const moduleIdRegex = new RegExp(
+	'^((?:[^@\\s/]+)|(?:@[^@\\s/]+/[^@\\s/]+))(?:@([^@\\s/]+))?(\\/[^@\\s]*)?$'
+)
+// ...because using literal regexp breaks my highlighting
 
 export function stripVersion(id: string): string {
 	const res = moduleIdRegex.exec(id)
@@ -176,6 +186,110 @@ export function findRequired(code: string): FindRequiredOutput {
 	return state
 }
 
+export async function processRequired({
+	required,
+	moduler,
+	ask
+}: {
+	required: FindRequiredOutput
+	moduler: Moduler
+	ask: Ask
+}) {
+	for (const pack of required.packages) {
+		/* eslint-disable no-await-in-loop */
+		const resolved = returnError(() =>
+			moduler.resolve(pack.name)
+		)
+
+		if (resolved instanceof Error) {
+			// The module id is not a relative path and
+			// couldn't be resolved, ask the user whether
+			// they want to install it
+			let answer: boolean
+			try {
+				answer = await ask.install(
+					pack.name,
+					pack.version
+				)
+			} catch (error) {
+				if (
+					error instanceof RegistryError &&
+					error.code === 'NOT_FOUND'
+				) {
+					console.error(c.red(
+						figures.cross,
+						'Package',
+						c.bold(pack.name) + (pack.version ?
+							c.bold(`@${pack.version}`) : ''),
+						'was not found on the registry.'
+					))
+
+					continue
+				}
+
+				console.error(error)
+				continue
+			}
+
+			if (answer) {
+				const installed = await moduler.install(
+					pack.name,
+					pack.version
+				)
+
+				console.log(c.blue(
+					figures.arrowDown,
+					c.bold(pack.name + (pack.version ?
+						c.gray.bold('@' + pack.version) : '')
+					),
+					'installed',
+					installed ?
+						`in ${Math.round(installed.elapsed * 10000) / 10000000}s!` :
+						'!'
+				) + '\n')
+			}
+		} else {
+			const loc =	resolved.location === 'global cache' ?
+				'jay\'s cache' :
+				resolved.location
+
+			console.log(
+				c.green(
+					figures.tick,
+					resolved.meta ?
+						`${
+							c.bold(resolved.meta.name)
+						}${
+							c.gray.bold('@' + resolved.meta.version)
+						}` :
+						`${c.bold(pack.name)}`
+					,
+					`imported from ${c.italic(loc)}.`
+				)
+			)
+		}
+		/* eslint-enable no-await-in-loop */
+	}
+}
+
+const Pkg = t.type({
+	package: t.intersection([
+		t.type({
+			name: t.string,
+			version: t.string
+		}),
+		t.record(t.string, t.unknown)
+	]),
+	path: t.string
+})
+
+const decodePkg = (filepath: string) =>
+	Pkg.decode(readPkgUp.sync({
+		cwd: path.dirname(filepath)
+	})).getOrElseL(() => {
+		throw new Error(`\`${filepath}\` has an invalid \`package.json\` file`)
+	})
+
 export interface Moduler {
 	// Retrieve npm information about a package
 	info(name: string, version?: string): Promise<PackageMeta>
@@ -190,74 +304,79 @@ export interface Moduler {
 	require(id: string): unknown
 }
 
-export function createModuler(basePath: string): Moduler {
+export function createModuler(
+	basePath: string,
+	cwd: string,
+	locations: ResolveLocation[]
+): Moduler {
 	makeDir.sync(basePath)
 
-	function _resolve(id: string): Resolved {
-		// 1. Resolve local relative modules
-		if (isLocalModuleId(id)) {
-			return {
-				location: 'relative',
-				// We let this throw normally
-				filepath: resolve.sync(id, {
-					basedir: process.cwd()
-				})
-			}
-		}
-
-		const strippedId = stripVersion(id)
-
-		const Pkg = t.type({
-			package: t.intersection([
-				t.type({
-					name: t.string,
-					version: t.string
-				}),
-				t.record(t.string, t.unknown)
-			]),
-			path: t.string
-		})
-
-		const decodePkg = (filepath: string) =>
-			Pkg.decode(readPkgUp.sync({
-				cwd: path.dirname(filepath)
-			})).getOrElseL(() => {
-				throw new Error(`\`${id}\` has an invalid \`package.json\` file`)
-			})
-
-		// 2. Resolve local node_modules
-		try {
-			const filepath = resolve.sync(strippedId, {
-				basedir: process.cwd()
-			})
-
-			const pkg = decodePkg(filepath).package
-
-			return {
-				location: 'node_modules',
-				filepath,
-				meta: {
-					name: pkg.name,
-					version: pkg.version
+	const resolves: {
+		[Location in ResolveLocation]: (id: string) => Resolved<Location> | undefined
+	} = {
+		relative(id) {
+			if (isLocalModuleId(id)) {
+				return {
+					location: 'relative',
+					// We let this throw normally
+					filepath: resolve.sync(id, {
+						basedir: cwd
+					})
 				}
 			}
-		} catch {}
+		},
+		'node_modules'(id) {
+			const strippedId = stripVersion(id)
 
-		// 3. Resolve in global cache
-		const filepath = resolve.sync(strippedId, {
-			basedir: path.join(path.join(basePath, 'lib'))
-		})
+			try {
+				const filepath = resolve.sync(strippedId, {
+					basedir: process.cwd()
+				})
 
-		const pkg = decodePkg(filepath).package
+				const pkg = decodePkg(filepath).package
 
-		return {
-			location: 'global cache',
-			filepath,
-			meta: {
-				name: pkg.name,
-				version: pkg.version
+				return {
+					location: 'node_modules',
+					filepath,
+					meta: {
+						name: pkg.name,
+						version: pkg.version
+					}
+				}
+			} catch {}
+		},
+		'global cache'(id) {
+			const strippedId = stripVersion(id)
+
+			try {
+				const filepath = resolve.sync(strippedId, {
+					basedir: path.join(path.join(basePath, 'lib'))
+				})
+
+				const pkg = decodePkg(filepath).package
+
+				return {
+					location: 'global cache',
+					filepath,
+					meta: {
+						name: pkg.name,
+						version: pkg.version
+					}
+				}
+			} catch {}
+		}
+	}
+
+	function _resolve(id: string): Resolved {
+		for (const location of locations) {
+			const result = resolves[location](id)
+
+			if (result) {
+				return result
 			}
 		}
+
+		throw new Error(`Module not found (${id})`)
 	}
 
 	function _require(id: string): unknown {

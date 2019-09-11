@@ -1,6 +1,6 @@
 import {Jay} from '../types'
 
-export default (jay: Jay) =>
+export = (jay: Jay) =>
 	jay.on('keypress', async (key, stop) => {
 		if (key.name === 'return') {
 			await jay.prompt.stop()

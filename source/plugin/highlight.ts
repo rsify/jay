@@ -3,7 +3,7 @@ import {default as c} from 'chalk'
 
 import {Jay} from '../types'
 
-export default (jay: Jay) => {
+export = (jay: Jay) => {
 	jay.on('render', ([output, cursor]) => {
 		/* eslint-disable @typescript-eslint/camelcase */
 		const highlightSheet: emphasize.Sheet = {
