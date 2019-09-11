@@ -2,36 +2,16 @@
 
 > Supercharged JavaScript REPL :sunglasses:
 
-<hr>
-
 Jay is a terminal-based JavaScript REPL focused on increasing prototyping speed and productivity. It's packed with modern REPL features, whilst also striving to maintain a familiar REPL vibe.
 
 Here are the most important features that differentiate Jay from other REPL's:
 
-<br>
-<p align="center">
-	<img src="https://github.com/nikersify/jay/raw/master/media/features/npm-require.gif"><br>
-	<code>require</code> modules directly from the registry
-</p>
-<br>
+- `require` modules directly from the registry
+- Eager eval (requires `node >= 12.3.0`)
+- Top level `await`
+- Typeahead + dropdown menu-style completion
 
-<p align="center">
-	<img src="https://github.com/nikersify/jay/raw/master/media/features/eager-eval.gif"><br>
-	Eager eval (requires <code>node >= 12.3.0</code>)
-</p>
-<br>
-
-<p align="center">
-	<img src="https://github.com/nikersify/jay/raw/master/media/features/top-level-await.gif"><br>
-	Top level <code>await</code>
-</p>
-<br>
-
-<p align="center">
-	<img src="https://github.com/nikersify/jay/raw/master/media/features/completion.gif"><br>
-	Typeahead + dropdown menu-style completion
-</p>
-<br>
+Plus some necessities:
 
 - Colored input
 - Bracket/quote pair completion
