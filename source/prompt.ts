@@ -359,15 +359,27 @@ export default function promptLine({
 			} else if (ctrl && name === 'd') {
 				stop()
 
+				if (process.env.QUIT_W_C){
+					if (rl.line === '') {
+						stdout.write(c.gray(`Press \`${c.bold('ctrl+c')}\` to exit.\n`))
+					}
+
+					return resolve([Commands.Abort, {}])
+				}
+
 				return resolve([Commands.Exit, {}])
 			} else if (ctrl && name === 'c') {
 				stop()
 
-				if (rl.line === '') {
-					stdout.write(c.gray(`Press \`${c.bold('ctrl+d')}\` to exit.\n`))
+				if (!process.env.QUIT_W_C){
+					if (rl.line === '') {
+						stdout.write(c.gray(`Press \`${c.bold('ctrl+d')}\` to exit.\n`))
+					}
+
+					return resolve([Commands.Abort, {}])
 				}
 
-				return resolve([Commands.Abort, {}])
+                                return resolve([Commands.Exit, {}])
 			} else if (ctrl && name === 'l') {
 				stdout.write(ansiEscapes.cursorTo(0, 0))
 				stdout.write(ansiEscapes.eraseDown)
