@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "target": "es2016", // Node.js 6
+    "target": "es2018", // Node.js 10
     "module": "commonjs",
-    "lib": ["esnext"],
+    "lib": ["es2018"],
     "moduleResolution": "node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
