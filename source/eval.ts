@@ -108,7 +108,6 @@ export function createEvaluator(
 
 		try {
 			const output = await script.runInContext(context)
-			context._ = output
 
 			return {output}
 		} catch (error) {

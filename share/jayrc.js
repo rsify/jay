@@ -1,33 +1,26 @@
 // This is the one and only jay's configuration file, aka the
-// place where you load and configure your plugins.
-
-// More information:
-// https://github.com/nikersify/jay/tree/master/doc/plugins.md (TODO)
+// place where you load plugins.
 
 module.exports = jay => {
 	// Example plugin:
-	/*
-	jay.on('line', (line, stop) => {
-		return line.replace('cats are ugly', 'cats are pretty')
+	jay.on('line', line => {
+		if (line === '.exit') {
+			process.exit(0)
+		}
+
+		return line
 	})
-	*/
 
 	// Try uncommenting the above lines, and entering `'cats are
 	// ugly'` into a new jay instance - you should see a
 	// non-blasphemic version of the sentence.
 
-	// ================
-	// Built-in plugins
-	// ================
+	// ================================================
+	//                 Built-in plugins
+	// ================================================
 
 	// You can disable any of the built-in plugins by simply
 	// commenting out the line where they're required.
-
-	// Show node, jay & npm versions on startup
-	require('jay-repl/dist/plugin/hello')(jay)
-
-	// Display help information on startup and define jay.help()
-	require('jay-repl/dist/plugin/help')(jay)
 
 	// =========
 	// Rendering
@@ -35,39 +28,51 @@ module.exports = jay => {
 	// Highlight input
 	require('jay-repl/dist/plugin/highlight')(jay)
 
-	// Prepend prompt character
-	require('jay-repl/dist/plugin/ps1')(jay)
-
-	// ==========
-	// Evaluation
-
-	// Add globals like `console`, `global`, `Promise`, `_`, etc.
-	require('jay-repl/dist/plugin/globals')(jay)
-
-	// Process npm-required packages
-	require('jay-repl/dist/plugin/smart-require')(jay)
-
-	// Wrap input with an async iife to support top level await
-	require('jay-repl/dist/plugin/wrap-await')(jay)
-
-	// Evaluate input
-	require('jay-repl/dist/plugin/evaluate')(jay)
+	// Prepend a simple prompt
+	require('jay-repl/dist/plugin/prompt')(jay, {
+		prompt: '> '
+	})
 
 	// ============
 	// Key handling
 
-	// Standard ctrl+letter bindings
-	require('jay-repl/dist/plugin/ctrl')(jay)
-
 	// Add/remove pair characters, e.g. entering `"` outputs
 	// `"|"` where `|` is the position of the cursor. Pressing
 	// backspace removes the whole pair.
-	require('jay-repl/dist/plugin/pairs')(jay)
+	require('jay-repl/dist/plugin/pairs')(jay, [
+		['\'', '\''],
+		['"', '"'],
+		['`', '`'],
+		['(', ')'],
+		['{', '}'],
+		['[', ']']
+	])
 
-	// Handle enter key properly
-	require('jay-repl/dist/plugin/return')(jay)
+	// Built-in keybindings
+	require('jay-repl/dist/plugin/bindings')(jay)
 
-	// Pass all keys not handled previously in plugins to
-	// `readline`
-	require('jay-repl/dist/plugin/readline-input')(jay)
+	// ==========
+	// Evaluation
+
+	// Support top level await
+	require('jay-repl/dist/plugin/wrap-await')(jay)
+
+	// Process npm-required packages
+	require('jay-repl/dist/plugin/smart-require')(jay)
+
+	// Evaluate input
+	require('jay-repl/dist/plugin/evaluate')(jay, {
+		eagerEval: true,
+		underscore: true,
+		globals: true
+	})
+
+	// Startup
+	// =======
+
+	// Show node & jay versions on startup
+	require('jay-repl/dist/plugin/hello')(jay)
+
+	// Display help information on startup and define jay.help()
+	require('jay-repl/dist/plugin/help')(jay)
 }

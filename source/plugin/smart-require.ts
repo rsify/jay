@@ -2,7 +2,6 @@ import path from 'path'
 
 import envPaths from 'env-paths'
 import {default as c} from 'chalk'
-import {uniq} from 'lodash'
 
 import {Jay} from '../types'
 
@@ -31,6 +30,8 @@ export = (jay: Jay) => {
 	jay.context.require = moduler.require
 
 	jay.on('line', async (line, stop) => {
+		const uniq = (await import('lodash/uniq')).default
+
 		let required
 		try {
 			required = findRequired(line)

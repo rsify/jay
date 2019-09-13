@@ -12,10 +12,13 @@ import {
 	Jay,
 	DefaultPluggerTypes
 } from './types'
+
 import promptLine from './prompt'
 
 import {createHistorian} from './history'
+
 import {createPlugger} from './plugger'
+
 import {createRc} from './rc'
 
 import {

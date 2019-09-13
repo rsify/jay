@@ -116,12 +116,14 @@
 				}
 			]
 		},
-		"overrides": [{
-			"files": "share/jayrc.js",
-			"rules": {
-				"@typescript-eslint/no-require-imports": "off",
-				"import/no-unresolved": "off"
+		"overrides": [
+			{
+				"files": "share/jayrc.js",
+				"rules": {
+					"@typescript-eslint/no-require-imports": "off",
+					"import/no-unresolved": "off"
+				}
 			}
-		}]
+		]
 	}
 }

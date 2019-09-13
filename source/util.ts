@@ -1,12 +1,8 @@
 import {createWriteStream} from 'fs'
-import {emitKeypressEvents} from 'readline'
 
 import builtinModules from 'builtin-modules'
 import readPkgUp from 'read-pkg-up'
 import * as t from 'io-ts'
-import {zip} from 'lodash'
-
-import {KeypressDetails} from './prompt'
 
 const {env} = process
 
@@ -24,17 +20,13 @@ export const debug = (msg: string, ...rest: string[]): any =>
 		debugFifo.write([msg].concat(rest).join(' ') + '\n')
 
 export const time = (title: string): (() => string) => {
-	const [, start] = process.hrtime()
-	return () => `time ${title}: ${(process.hrtime()[1] - start) / 1e6}ms`
-}
+	const start = process.hrtime()
 
-// Take a 2d array of string rows, return the sizes of the longest cells in
-// each column
-export function getColumnSizes(input: string[][]): number[] {
-	return input.reduce((sizes, row) =>
-		zip(sizes, row).map(([size, cell]) =>
-			Math.max((cell || '').length, size || 0)
-		), [] as number[])
+	return () => {
+		const diff = process.hrtime(start)
+		const ms = ((diff[0] * 1e9) + diff[1]) / 1e6
+		return `time ${title}: ${ms}ms`
+	}
 }
 
 export function returnError<T>(fn: () => T): T | Error {
@@ -43,31 +35,6 @@ export function returnError<T>(fn: () => T): T | Error {
 	} catch (error) {
 		return error
 	}
-}
-
-export function getKeyPress(stream: NodeJS.ReadStream): Promise<KeypressDetails> {
-	return new Promise(resolve => {
-		if (!stream.isTTY || !stream.setRawMode) {
-			return false
-		}
-
-		const setRawMode = (b: boolean) =>
-			stream.setRawMode &&
-			stream.setRawMode(b)
-
-		const wasRaw = stream.isRaw || false
-
-		setRawMode(true)
-		stream.resume()
-
-		emitKeypressEvents(stream)
-
-		stream.once('keypress', (key: string | undefined, details: KeypressDetails) => {
-			setRawMode(wasRaw)
-			resolve(details)
-			stream.pause()
-		})
-	})
 }
 
 export const addBuiltinsToObject = (o: LooseObject): void =>
@@ -94,6 +61,24 @@ export const addBuiltinsToObject = (o: LooseObject): void =>
 			}
 		})
 	)
+
+export const addGlobalsToObject = (o: LooseObject): void =>
+	Object.getOwnPropertyNames(global).forEach(name => {
+		if (name === 'global') {
+			return
+		}
+
+		const descriptor =
+			Object.getOwnPropertyDescriptor(global, name)
+
+		if (typeof descriptor !== 'undefined') {
+			Object.defineProperty(
+				o,
+				name,
+				descriptor
+			)
+		}
+	})
 
 // Reading package.json like this prevents typescript from nesting the "source"
 // folder within dist - doing `import '../package.json'` from `source` creates

@@ -14,7 +14,12 @@ import {createAsk} from './ask'
 import {createContext} from './inspector'
 import {createEvaluator} from './eval'
 import {createModuler, findRequired, processRequired} from './moduler'
-import {packageJson, returnError, LooseObject} from './util'
+import {
+	addGlobalsToObject,
+	packageJson,
+	returnError,
+	LooseObject
+} from './util'
 
 export function createRc(rcPath: string) {
 	makeDir.sync(path.dirname(rcPath))
@@ -90,9 +95,13 @@ export function createRc(rcPath: string) {
 				jay.stdout
 			)
 		})
+
+		addGlobalsToObject(context)
+
 		const ev = createEvaluator(context, contextId)
 
-		ev.evaluate(rcContents)
+		// TODO Catch error
+		await ev.evaluate(rcContents)
 
 		const rcFilename = path.basename(rcPath)
 		if (typeof mod.exports !== 'function') {
@@ -102,7 +111,7 @@ export function createRc(rcPath: string) {
 		}
 
 		try {
-			await mod.exports(jay)
+			mod.exports(jay)
 		} catch (error) {
 			console.error(chalk.red(figures.cross, `Uncaught Error while evaluating ${rcFilename}`))
 			console.error(chalk.gray(error.stack))

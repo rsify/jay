@@ -1,15 +1,41 @@
+import {emitKeypressEvents} from 'readline'
+
+import ago from 's-ago'
 import ansiEscapes from 'ansi-escapes'
 import ora from 'ora'
 import wrapAnsi from 'wrap-ansi'
-import ago from 's-ago'
 import {default as c} from 'chalk'
 
-import {getKeyPress} from './util'
 import {Moduler} from './moduler'
 import {KeypressDetails} from './prompt'
 
 export interface Ask {
 	install(name: string, version?: string): Promise<boolean>
+}
+
+export function getKeyPress(stream: NodeJS.ReadStream): Promise<KeypressDetails> {
+	return new Promise(resolve => {
+		if (!stream.isTTY || !stream.setRawMode) {
+			return false
+		}
+
+		const setRawMode = (b: boolean) =>
+			stream.setRawMode &&
+			stream.setRawMode(b)
+
+		const wasRaw = stream.isRaw || false
+
+		setRawMode(true)
+		stream.resume()
+
+		emitKeypressEvents(stream)
+
+		stream.once('keypress', (key: string | undefined, details: KeypressDetails) => {
+			setRawMode(wasRaw)
+			resolve(details)
+			stream.pause()
+		})
+	})
 }
 
 export function createAsk(

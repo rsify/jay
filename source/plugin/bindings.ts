@@ -70,4 +70,27 @@ export = (jay: Jay) => {
 
 		return key
 	})
+
+	// `return` - resolve prompt with a new line
+	jay.on('keypress', async (key, stop) => {
+		if (key.name === 'return') {
+			await jay.prompt.stop()
+
+			jay.prompt.resolve([
+				'Line',
+				jay.prompt.readline.line
+			])
+
+			return stop(key)
+		}
+
+		return key
+	})
+
+	// `*` - fallthrough all other characters to jay's readline
+	jay.on('keypress', (key, stop) => {
+		jay.prompt.readlineInputStream.write(key.sequence)
+
+		return stop(key)
+	})
 }

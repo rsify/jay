@@ -1,5 +1,4 @@
 import {default as c} from 'chalk'
-import execa from 'execa'
 
 import {Jay} from '../types'
 
@@ -11,7 +10,6 @@ export = (_: Jay) => {
 
 	console.log(
 		c.yellow(`node ${process.version}`),
-		version('npm', execa.sync('npm', ['-v']).stdout),
 		version(packageJson.name, packageJson.version)
 	)
 }

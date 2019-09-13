@@ -1,21 +1,22 @@
 import {Jay} from '../types'
 
 type Pair = [string, string]
-const pairs: Pair[] = [
-	['\'', '\''],
-	['"', '"'],
-	['`', '`'],
-	['(', ')'],
-	['{', '}'],
-	['[', ']']
-]
 
-const getPair = (ch: string): Pair | undefined => pairs.find(p => p[0] === ch)
-const hasXPair = (x: 0 | 1) => (ch: string) => pairs.map(p => p[x]).includes(ch)
-const hasPostPair = hasXPair(0)
-const hasPrePair = hasXPair(1)
+export = (jay: Jay, _pairs: Pair[]) => {
+	const pairs = _pairs || [
+		['\'', '\''],
+		['"', '"'],
+		['`', '`'],
+		['(', ')'],
+		['{', '}'],
+		['[', ']']
+	]
 
-export = (jay: Jay) =>
+	const getPair = (ch: string): Pair | undefined => pairs.find(p => p[0] === ch)
+	const hasXPair = (x: 0 | 1) => (ch: string) => pairs.map(p => p[x]).includes(ch)
+	const hasPostPair = hasXPair(0)
+	const hasPrePair = hasXPair(1)
+
 	jay.on('keypress', (key, stop) => {
 		const rl = jay.prompt.readline
 		const {name, sequence} = key
@@ -68,3 +69,4 @@ export = (jay: Jay) =>
 
 		return key
 	})
+}

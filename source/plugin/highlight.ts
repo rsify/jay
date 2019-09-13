@@ -1,12 +1,12 @@
-import emphasize from 'emphasize'
-import {default as c} from 'chalk'
+import emphasize, {Sheet} from 'emphasize'
+import c from 'chalk'
 
 import {Jay} from '../types'
 
 export = (jay: Jay) => {
 	jay.on('render', ([output, cursor]) => {
 		/* eslint-disable @typescript-eslint/camelcase */
-		const highlightSheet: emphasize.Sheet = {
+		const highlightSheet: Sheet = {
 			keyword: c.magenta,
 			built_in: c.cyan.italic,
 			literal: c.cyan,
