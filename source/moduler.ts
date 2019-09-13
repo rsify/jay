@@ -15,7 +15,7 @@ import {default as c} from 'chalk'
 import {failure} from 'io-ts/lib/PathReporter'
 
 import {Ask} from './ask'
-import {debug, returnError, time} from './util'
+import {debug, returnError, getOrThrow, time} from './util'
 
 export const findRequiredErrors = {
 	parseError: 'Could not parse provided code',
@@ -283,12 +283,12 @@ const Pkg = t.type({
 	path: t.string
 })
 
-const decodePkg = (filepath: string) =>
+const decodePkg = (filepath: string) => getOrThrow(
 	Pkg.decode(readPkgUp.sync({
 		cwd: path.dirname(filepath)
-	})).getOrElseL(() => {
-		throw new Error(`\`${filepath}\` has an invalid \`package.json\` file`)
-	})
+	})),
+	() => `\`${filepath}\` has an invalid \`package.json\` file`
+)
 
 export interface Moduler {
 	// Retrieve npm information about a package
@@ -383,7 +383,7 @@ export function createModuler(
 		return importFresh(_resolve(id).filepath)
 	}
 
-	async function install(name: string, version: string = 'latest'): Promise<Installed | undefined> {
+	async function install(name: string, version = 'latest'): Promise<Installed | undefined> {
 		const id = name + (version ? '@' + version : '')
 		const args = [
 			'install',
@@ -403,12 +403,13 @@ export function createModuler(
 		})
 
 		try {
-			return t.intersection([
-				InstalledIO,
-				t.record(t.string, t.unknown)
-			]).decode(JSON.parse(stdout)).getOrElseL(errors => {
-				throw new Error(failure(errors).join('\n'))
-			})
+			return getOrThrow(
+				t.intersection([
+					InstalledIO,
+					t.record(t.string, t.unknown)
+				]).decode(JSON.parse(stdout)),
+				errors => failure(errors).join('\n')
+			)
 		} catch {}
 
 		return undefined
@@ -416,7 +417,7 @@ export function createModuler(
 
 	async function info(
 		name: string,
-		version: string = 'latest'
+		version = 'latest'
 	): Promise<PackageMeta> {
 		const id = name + (version ? '@' + version : '')
 		const args = [
@@ -425,7 +426,7 @@ export function createModuler(
 			'--json'
 		]
 
-		const {code, stdout} = await execa('npm', args, {
+		const {exitCode, stdout} = await execa('npm', args, {
 			reject: false,
 			stderr: 'pipe'
 		})
@@ -455,11 +456,11 @@ export function createModuler(
 
 		const parsed = JSON.parse(stdout)
 
-		if (code !== 0) {
-			const {error} = OutputError.decode(parsed)
-				.getOrElseL(errors => {
-					throw new Error(failure(errors).join('\n'))
-				})
+		if (exitCode !== 0) {
+			const {error} = getOrThrow(
+				OutputError.decode(parsed),
+				errors => failure(errors).join('\n')
+			)
 
 			if (error.code === 'E404') {
 				throw new RegistryError(
@@ -471,11 +472,10 @@ export function createModuler(
 			throw new RegistryError('UNKNOWN', error.summary)
 		}
 
-		const output = OutputSuccess.decode(parsed)
-			.getOrElseL(errors => {
-				console.log(parsed)
-				throw new Error(failure(errors).join('\n'))
-			})
+		const output = getOrThrow(
+			OutputSuccess.decode(parsed),
+			errors => failure(errors).join('\n')
+		)
 
 		const published = output.time[output.version]
 

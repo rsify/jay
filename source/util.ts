@@ -1,8 +1,9 @@
 import {createWriteStream} from 'fs'
 
+import * as t from 'io-ts'
 import builtinModules from 'builtin-modules'
 import readPkgUp from 'read-pkg-up'
-import * as t from 'io-ts'
+import {isLeft, Either} from 'fp-ts/lib/Either'
 
 const {env} = process
 
@@ -46,7 +47,7 @@ export const addBuiltinsToObject = (o: LooseObject): void =>
 			// trigger the getter, rendering this whole mechanism useless.
 			enumerable: false,
 			get() {
-				// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+				// eslint-disable-next-line @typescript-eslint/no-var-requires
 				const required = require(m)
 
 				delete o[m]
@@ -80,6 +81,17 @@ export const addGlobalsToObject = (o: LooseObject): void =>
 		}
 	})
 
+export function getOrThrow<E, A>(
+	either: Either<E, A>,
+	messageFn: (err: E) => string
+): A {
+	if (isLeft(either)) {
+		throw new Error(messageFn(either.left))
+	}
+
+	return either.right
+}
+
 // Reading package.json like this prevents typescript from nesting the "source"
 // folder within dist - doing `import '../package.json'` from `source` creates
 // `dist/package.json` and `dist/source/*`. This normally wouldn't be a big
@@ -88,7 +100,7 @@ export const addGlobalsToObject = (o: LooseObject): void =>
 // only from `/` but also `/source`. Since we have `dist` in the `files`
 // package.json property, npm looks for `source/dist`, and only for that folder
 // (which obviously doesn't exist within `source`).
-export const packageJson = t.intersection([
+const PackageJson = t.intersection([
 	t.type({
 		name: t.string,
 		version: t.string,
@@ -101,8 +113,11 @@ export const packageJson = t.intersection([
 		})
 	}),
 	t.record(t.string, t.unknown)
-]).decode((readPkgUp.sync({
-	cwd: __dirname
-}) || {package: {}}).package).getOrElseL(() => {
-	throw new Error('Couldn\'t parse `package.json` - invalid format')
-})
+])
+
+export const packageJson = getOrThrow(
+	PackageJson.decode((readPkgUp.sync({
+		cwd: __dirname
+	}) || {package: {}}).package),
+	() => 'Could not find/parse jay\'s `package.json` file'
+)

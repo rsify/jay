@@ -13,6 +13,7 @@ export interface Ask {
 	install(name: string, version?: string): Promise<boolean>
 }
 
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 export function getKeyPress(stream: NodeJS.ReadStream): Promise<KeypressDetails> {
 	return new Promise(resolve => {
 		if (!stream.isTTY || !stream.setRawMode) {
@@ -45,7 +46,7 @@ export function createAsk(
 ): Ask {
 	async function install(
 		name: string,
-		version: string = 'latest'
+		version = 'latest'
 	): Promise<boolean> {
 		const write = outStream.write.bind(outStream)
 

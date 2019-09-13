@@ -20,6 +20,7 @@ try {
 
 const createProxy = (domain: string): any => new Proxy({} as any, {
 	get(_, property) {
+		// eslint-disable-next-line @typescript-eslint/promise-function-async
 		return (args?: object) => {
 			if (typeof property !== 'string') {
 				throw new TypeError(`Expected string, got ${typeof property}`)
