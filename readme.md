@@ -192,6 +192,13 @@ You can see the exact location of the cache by simply running the following line
 > require('env-paths')('jay-repl').cache
 ```
 
+## How to find out the jay version installed?
+
+There is a cli flag `--version` that shows the jay version.
+
+```bash
+$ jay --version # jay version is 0.2.2
+```
 
 # Contributing
 
