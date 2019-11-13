@@ -57,6 +57,11 @@ if (semver.lt(process.version, '10.0.0')) {
 	process.exit(1)
 }
 
+if (process.argv[2] === '--version') {
+	console.log(c.magenta(`jay version is ${packageJson.version}`))
+	process.exit()
+}
+
 updateNotifier({
 	pkg: packageJson
 }).notify()
