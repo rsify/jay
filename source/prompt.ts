@@ -20,6 +20,21 @@ import {CompletionsMeta} from './complete'
 import {PureEvaluator} from './eval'
 import {debug, getColumnSizes, time} from './util'
 
+import ioHook  from 'iohook'
+
+interface IOHookEvent {
+  type: string
+  keychar?: number
+  keycode?: number
+	rawcode?: number
+	shiftKey?: boolean
+	ctrlKey?: boolean
+	altKey?: boolean
+	metaKey?: boolean
+}
+
+let lastKeys: IOHookEvent[]= [{type: ``}]
+
 export interface KeypressDetails {
 	sequence: string
 	name: string
@@ -382,8 +397,14 @@ export default function promptLine({
 				stdout.write('\n')
 				process.kill(process.pid, 'SIGTSTP')
 			} else if (name === 'return') {
-				stop()
-				return resolve([Commands.Line, {line: rl.line}])
+				const lastKey = lastKeys.concat().pop()
+				if (lastKey!.shiftKey) {
+					stdout.write('\n')
+					rl.write('\n')
+				} else {
+					stop()
+					return resolve([Commands.Line, {line: rl.line}])
+				}
 			} else if (hasPrePair(sequence) && sequence === relativeCharacter(0)) {
 				// Next character is a pair and is the same as the one entered, ghost it
 				// input `)`: `(|)` -> `()|`
@@ -463,6 +484,17 @@ export default function promptLine({
 
 		stdout.on('resize', resizeListener)
 		stdin.on('keypress', keypressListener)
+
+		ioHook.on('keypress', (event: IOHookEvent) => {
+			if (lastKeys.length < 2) lastKeys.push(event)
+		  else {
+				lastKeys.pop()
+				lastKeys.unshift(event)
+			}
+		});
+		
+		
+		ioHook.start(false);
 
 		rerender()
 
